@@ -37,14 +37,14 @@ infix operator ′* : MultiplicationPrecedence
 infix operator *′ : MultiplicationPrecedence
 infix operator ′*′ : MultiplicationPrecedence
 
-public extension Matrix where Elem : LANumeric {
+public extension Matrix where Element : LANumeric {
     
-    var manhattanNorm : Elem.Magnitude { return Elem.manhattanNorm(elements) }
+    var manhattanNorm : Element.Magnitude { return Element.manhattanNorm(elements) }
     
-    var euclideanNorm : Elem.Magnitude { return Elem.euclideanNorm(elements) }
+    var euclideanNorm : Element.Magnitude { return Element.euclideanNorm(elements) }
     
-    var largest : Elem {
-        let index = Elem.indexOfLargestElem(elements)
+    var largest : Element {
+        let index = Element.indexOfLargestElem(elements)
         if index >= 0 {
             return elements[index]
         } else {
@@ -60,62 +60,62 @@ public extension Matrix where Elem : LANumeric {
         return left.scaleAndAdd(1, -1, right)
     }
     
-    func scaleAndAdd(_ alpha : Elem, _ beta : Elem, _ other : Matrix<Elem>) -> Matrix<Elem> {
+    func scaleAndAdd(_ alpha : Element, _ beta : Element, _ other : Matrix<Element>) -> Matrix<Element> {
         var result = self
         result.accumulate(alpha, beta, other)
         return result
     }
     
-    mutating func accumulate(_ alpha : Elem, _ beta : Elem, _ other : Matrix<Elem>) {
+    mutating func accumulate(_ alpha : Element, _ beta : Element, _ other : Matrix<Element>) {
         precondition(hasSameDimensions(other))
-        Elem.scaleAndAddVectors(beta, other.elements, alpha, &self.elements)
+        Element.scaleAndAddVectors(beta, other.elements, alpha, &self.elements)
     }
         
     static func eye(_ m : Int) -> Matrix {
-        return Matrix(diagonal : [Elem](repeating: 1, count: m))
+        return Matrix(diagonal : [Element](repeating: 1, count: m))
     }
     
     static func *(left : Matrix, right : Matrix) -> Matrix {
-        var C = Matrix<Elem>(rows: left.rows, columns: right.columns)
-        Elem.matrixProduct(1, false, left, false, right, 0, &C)
+        var C = Matrix<Element>(rows: left.rows, columns: right.columns)
+        Element.matrixProduct(1, false, left, false, right, 0, &C)
         return C
     }
     
     static func ′*(left : Matrix, right : Matrix) -> Matrix {
-        var C = Matrix<Elem>(rows: left.columns, columns: right.columns)
-        Elem.matrixProduct(1, true, left, false, right, 0, &C)
+        var C = Matrix<Element>(rows: left.columns, columns: right.columns)
+        Element.matrixProduct(1, true, left, false, right, 0, &C)
         return C
     }
 
     static func *′(left : Matrix, right : Matrix) -> Matrix {
-        var C = Matrix<Elem>(rows: left.rows, columns: right.rows)
-        Elem.matrixProduct(1, false, left, true, right, 0, &C)
+        var C = Matrix<Element>(rows: left.rows, columns: right.rows)
+        Element.matrixProduct(1, false, left, true, right, 0, &C)
         return C
     }
 
     static func ′*′(left : Matrix, right : Matrix) -> Matrix {
-        var C = Matrix<Elem>(rows: left.columns, columns: right.rows)
-        Elem.matrixProduct(1, true, left, true, right, 0, &C)
+        var C = Matrix<Element>(rows: left.columns, columns: right.rows)
+        Element.matrixProduct(1, true, left, true, right, 0, &C)
         return C
     }
 
-    static func *(left : Matrix, right : Vector<Elem>) -> Vector<Elem> {
-        var Y = [Elem](repeating: Elem.zero, count: left.rows)
-        Elem.matrixVectorProduct(1, false, left, right, 0, &Y)
+    static func *(left : Matrix, right : Vector<Element>) -> Vector<Element> {
+        var Y = [Element](repeating: Element.zero, count: left.rows)
+        Element.matrixVectorProduct(1, false, left, right, 0, &Y)
         return Y
     }
     
-    static func ′*(left : Matrix, right : Vector<Elem>) -> Vector<Elem> {
-        var Y = [Elem](repeating: Elem.zero, count: left.columns)
-        Elem.matrixVectorProduct(1, true, left, right, 0, &Y)
+    static func ′*(left : Matrix, right : Vector<Element>) -> Vector<Element> {
+        var Y = [Element](repeating: Element.zero, count: left.columns)
+        Element.matrixVectorProduct(1, true, left, right, 0, &Y)
         return Y
     }
 
-    static func *=(left : inout Matrix, right : Elem) {
-        Elem.scaleVector(right, &left.elements)
+    static func *=(left : inout Matrix, right : Element) {
+        Element.scaleVector(right, &left.elements)
     }
     
-    static func *(left : Elem, right : Matrix) -> Matrix {
+    static func *(left : Element, right : Matrix) -> Matrix {
         var A = right
         A *= left
         return A
@@ -123,19 +123,19 @@ public extension Matrix where Elem : LANumeric {
     
 }
 
-public extension Matrix where Elem : LANumeric {
+public extension Matrix where Element : LANumeric {
     
-    var infinityNorm : Elem.Magnitude { return largest.magnitude }
+    var infinityNorm : Element.Magnitude { return largest.magnitude }
     
 }
 
-public func ′* <Elem : LANumeric>(left : Vector<Elem>, right : Vector<Elem>) -> Elem {
-    return Elem.dotProduct(left, right)
+public func ′* <Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Element {
+    return Element.dotProduct(left, right)
 }
 
-public func *′ <Elem : LANumeric>(left : Vector<Elem>, right : Vector<Elem>) -> Matrix<Elem> {
-    var A = Matrix<Elem>(rows: left.count, columns: right.count)
-    Elem.vectorVectorProduct(1, left, right, &A)
+public func *′ <Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Matrix<Element> {
+    var A = Matrix<Element>(rows: left.count, columns: right.count)
+    Element.vectorVectorProduct(1, left, right, &A)
     return A
 }
 

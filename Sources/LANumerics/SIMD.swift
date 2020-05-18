@@ -1,94 +1,94 @@
 import simd
 
-public extension Matrix where Elem : SIMDScalar {
+public extension Matrix where Element : SIMDScalar {
 
-    init(_ simd : SIMD2<Elem>) {
+    init(_ simd : SIMD2<Element>) {
         self.init([simd.x, simd.y])
     }
 
-    init(_ simd : SIMD3<Elem>) {
+    init(_ simd : SIMD3<Element>) {
         self.init([simd.x, simd.y, simd.z])
     }
     
-    init(_ simd : SIMD4<Elem>) {
+    init(_ simd : SIMD4<Element>) {
         self.init([simd.x, simd.y, simd.z, simd.w])
     }
     
-    init(_ simd : SIMD8<Elem>) {
+    init(_ simd : SIMD8<Element>) {
         self.init((0 ..< 8).map { i in simd[i] })
     }
 
-    init(_ simd : SIMD16<Elem>) {
+    init(_ simd : SIMD16<Element>) {
         self.init((0 ..< 16).map { i in simd[i] })
     }
 
-    init(_ simd : SIMD32<Elem>) {
+    init(_ simd : SIMD32<Element>) {
         self.init((0 ..< 32).map { i in simd[i] })
     }
 
-    init(_ simd : SIMD64<Elem>) {
+    init(_ simd : SIMD64<Element>) {
         self.init((0 ..< 64).map { i in simd[i] })
     }
 
-    init(row simd : SIMD2<Elem>) {
+    init(row simd : SIMD2<Element>) {
         self.init(row: [simd.x, simd.y])
     }
 
-    init(row simd : SIMD3<Elem>) {
+    init(row simd : SIMD3<Element>) {
         self.init(row: [simd.x, simd.y, simd.z])
     }
     
-    init(row simd : SIMD4<Elem>) {
+    init(row simd : SIMD4<Element>) {
         self.init(row: [simd.x, simd.y, simd.z, simd.w])
     }
     
-    init(row simd : SIMD8<Elem>) {
+    init(row simd : SIMD8<Element>) {
         self.init(row: (0 ..< 8).map { i in simd[i] })
     }
 
-    init(row simd : SIMD16<Elem>) {
+    init(row simd : SIMD16<Element>) {
         self.init(row: (0 ..< 16).map { i in simd[i] })
     }
 
-    init(row simd : SIMD32<Elem>) {
+    init(row simd : SIMD32<Element>) {
         self.init(row: (0 ..< 32).map { i in simd[i] })
     }
 
-    init(row simd : SIMD64<Elem>) {
+    init(row simd : SIMD64<Element>) {
         self.init(row: (0 ..< 64).map { i in simd[i] })
     }
     
-    var simd2 : SIMD2<Elem> {
+    var simd2 : SIMD2<Element> {
         return SIMD2(elements)
     }
     
-    var simd3 : SIMD3<Elem> {
+    var simd3 : SIMD3<Element> {
         return SIMD3(elements)
     }
     
-    var simd4 : SIMD4<Elem> {
+    var simd4 : SIMD4<Element> {
         return SIMD4(elements)
     }
 
-    var simd8 : SIMD8<Elem> {
+    var simd8 : SIMD8<Element> {
         return SIMD8(elements)
     }
 
-    var simd16 : SIMD16<Elem> {
+    var simd16 : SIMD16<Element> {
         return SIMD16(elements)
     }
 
-    var simd32 : SIMD32<Elem> {
+    var simd32 : SIMD32<Element> {
         return SIMD32(elements)
     }
 
-    var simd64 : SIMD64<Elem> {
+    var simd64 : SIMD64<Element> {
         return SIMD64(elements)
     }
 
 }
 
-public extension Matrix where Elem == Float {
+public extension Matrix where Element == Float {
     
     init(_ simd : simd_float2x2) {
         let (col0, col1) = simd.columns
@@ -182,7 +182,7 @@ public extension Matrix where Elem == Float {
     
 }
 
-public extension Matrix where Elem == Double {
+public extension Matrix where Element == Double {
     
     init(_ simd : simd_double2x2) {
         let (col0, col1) = simd.columns

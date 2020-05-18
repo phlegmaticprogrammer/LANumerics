@@ -4,12 +4,12 @@ public protocol MatrixElement : Hashable {
     
 }
 
-public typealias Vector<Elem : MatrixElement> = [Elem]
+public typealias Vector<Element : MatrixElement> = [Element]
 
-public struct Matrix<Elem : MatrixElement> : MatrixElement {
+public struct Matrix<Element : MatrixElement> : MatrixElement {
     
     /// We keep elements in [column-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order).
-    var elements : Vector<Elem>
+    var elements : Vector<Element>
     
     var _rows : Int
     
@@ -25,18 +25,18 @@ public struct Matrix<Elem : MatrixElement> : MatrixElement {
         return _columns
     }
         
-    public init(repeating : Elem = Elem.zero, rows : Int, columns : Int) {
+    public init(repeating : Element = Element.zero, rows : Int, columns : Int) {
         precondition(rows >= 0 && columns >= 0)
         self._rows = rows
         self._columns = columns
-        elements = [Elem](repeating: repeating, count: rows * columns)
+        elements = [Element](repeating: repeating, count: rows * columns)
     }
     
-    public init(rows : Int, columns : Int, elements : (_ row : Int, _ column : Int) -> Elem) {
+    public init(rows : Int, columns : Int, elements : (_ row : Int, _ column : Int) -> Element) {
         precondition(rows >= 0 && columns >= 0)
         self._rows = rows
         self._columns = columns
-        self.elements = [Elem](repeating: Elem.zero, count: rows * columns)
+        self.elements = [Element](repeating: Element.zero, count: rows * columns)
         var index = 0
         for c in 0 ..< columns {
             for r in 0 ..< rows {
@@ -46,36 +46,36 @@ public struct Matrix<Elem : MatrixElement> : MatrixElement {
         }
     }
     
-    public init(rows : Int, columns : Int, elements : Vector<Elem>) {
+    public init(rows : Int, columns : Int, elements : Vector<Element>) {
         precondition(rows >= 0 && columns >= 0 && rows * columns == elements.count)
         self._rows = rows
         self._columns = columns
         self.elements = elements
     }
     
-    public init(row : Vector<Elem>) {
+    public init(row : Vector<Element>) {
         self._rows = 1
         self._columns = row.count
         self.elements = row
     }
     
-    public init(_ column : Vector<Elem>) {
+    public init(_ column : Vector<Element>) {
         self._columns = 1
         self._rows = column.count
         self.elements = column
     }
     
-    public init(_ singleton : Elem) {
+    public init(_ singleton : Element) {
         self._columns = 1
         self._rows = 1
         self.elements = [singleton]
     }
         
-    public init(diagonal : Vector<Elem>) {
+    public init(diagonal : Vector<Element>) {
         let m = diagonal.count
         self._rows = m
         self._columns = m
-        self.elements = [Elem](repeating: Elem.zero, count: m * m)
+        self.elements = [Element](repeating: Element.zero, count: m * m)
         for i in 0 ..< columns {
             self[i, i] = diagonal[i]
         }
@@ -107,9 +107,9 @@ public struct Matrix<Elem : MatrixElement> : MatrixElement {
     public var count : Int { return _rows * _columns }
     
     /// Returns the matrix as vector. This also succeeds if the matrix is not an actual vector, the elements are then in column-major order.
-    public var vector : Vector<Elem> { return elements }
+    public var vector : Vector<Element> { return elements }
 
-    public subscript(row : Int, column : Int) -> Elem {
+    public subscript(row : Int, column : Int) -> Element {
         get {
             precondition(indexIsValid(row: row, column: column))
             return elements[column * _rows + row]
@@ -121,7 +121,7 @@ public struct Matrix<Elem : MatrixElement> : MatrixElement {
     }
 
     /// Gets / sets the element at `index` when viewing the matrix as a vector (with elements in column-major order).
-    public subscript(index : Int) -> Elem {
+    public subscript(index : Int) -> Element {
         get {
             return elements[index]
         }
@@ -130,8 +130,8 @@ public struct Matrix<Elem : MatrixElement> : MatrixElement {
         }
     }
     
-    public static var zero: Matrix<Elem> {
-        return Matrix<Elem>(rows: 0, columns: 0)
+    public static var zero: Matrix<Element> {
+        return Matrix<Element>(rows: 0, columns: 0)
     }
     
 }

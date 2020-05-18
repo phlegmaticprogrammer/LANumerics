@@ -30,7 +30,7 @@ extension Double : ToStringWithPrecision {
     
 }
 
-extension Matrix : ToStringWithPrecision, CustomStringConvertible where Elem : ToStringWithPrecision {
+extension Matrix : ToStringWithPrecision, CustomStringConvertible where Element : ToStringWithPrecision {
     
     private func left(row : Int) -> String {
         guard rows > 1 else { return "(" }

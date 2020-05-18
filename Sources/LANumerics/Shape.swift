@@ -1,14 +1,14 @@
 postfix operator ′ // unicode character "Prime": 2082
 
-public postfix func ′<Elem : MatrixElement>(vector : Vector<Elem>) -> Matrix<Elem> {
+public postfix func ′<Element : MatrixElement>(vector : Vector<Element>) -> Matrix<Element> {
     return Matrix(row: vector)
 }
 
-public postfix func ′<Elem : MatrixElement>(matrix : Matrix<Elem>) -> Matrix<Elem> {
+public postfix func ′<Element : MatrixElement>(matrix : Matrix<Element>) -> Matrix<Element> {
     return matrix.transposed()
 }
 
-public typealias BlockMatrix<Elem : MatrixElement> = Matrix<Matrix<Elem>>
+public typealias BlockMatrix<Element : MatrixElement> = Matrix<Matrix<Element>>
 
 public extension Matrix {
     
@@ -64,7 +64,7 @@ public extension Matrix {
     /// - todo: This is a naive implementation, needs to be optimized.
     subscript <R : Collection, C : Collection>(rowIndices : R, columnIndices : C) -> Matrix where R.Element == Int, C.Element == Int {
         get {
-            var elems : [Elem] = []
+            var elems : [Element] = []
             for c in columnIndices {
                 for r in rowIndices {
                     elems.append(self[r, c])
@@ -85,32 +85,32 @@ public extension Matrix {
         }
     }
     
-    init(columns : [Vector<Elem>]) {
-        var matrix = BlockMatrix<Elem>(rows : 1, columns : columns.count)
+    init(columns : [Vector<Element>]) {
+        var matrix = BlockMatrix<Element>(rows : 1, columns : columns.count)
         for (i, column) in columns.enumerated() {
             matrix[0, i] = Matrix(column)
         }
         self = flatten(matrix)
     }
 
-    init(rows : [Vector<Elem>]) {
-        var matrix = BlockMatrix<Elem>(rows : rows.count, columns : 1)
+    init(rows : [Vector<Element>]) {
+        var matrix = BlockMatrix<Element>(rows : rows.count, columns : 1)
         for (i, row) in rows.enumerated() {
             matrix[i, 0] = Matrix(row: row)
         }
         self = flatten(matrix)
     }
 
-    init(stackHorizontally stack: [Matrix<Elem>]) {
-        var matrix = BlockMatrix<Elem>(rows : 1, columns : stack.count)
+    init(stackHorizontally stack: [Matrix<Element>]) {
+        var matrix = BlockMatrix<Element>(rows : 1, columns : stack.count)
         for (i, m) in stack.enumerated() {
             matrix[0, i] = m
         }
         self = flatten(matrix)
     }
 
-    init(stackVertically stack: [Matrix<Elem>]) {
-        var matrix = BlockMatrix<Elem>(rows : stack.count, columns : 1)
+    init(stackVertically stack: [Matrix<Element>]) {
+        var matrix = BlockMatrix<Element>(rows : stack.count, columns : 1)
         for (i, m) in stack.enumerated() {
             matrix[i, 0] = m
         }

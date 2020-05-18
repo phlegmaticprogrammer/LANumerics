@@ -2,11 +2,11 @@ import Foundation
 
 public extension Matrix {
     
-    func map<E>(_ transform : (Elem) -> E) -> Matrix<E> {
+    func map<E>(_ transform : (Element) -> E) -> Matrix<E> {
         return Matrix<E>(rows: _rows, columns: _columns, elements: elements.map(transform))
     }
 
-    func combine<E, F>(_ other : Matrix<E>, _ using : (Elem, E) -> F) -> Matrix<F> {
+    func combine<E, F>(_ other : Matrix<E>, _ using : (Element, E) -> F) -> Matrix<F> {
         precondition(hasSameDimensions(other))
         let C = count
         var elems = [F](repeating: F.zero, count: C)
@@ -22,7 +22,7 @@ public extension Matrix {
         return Matrix<F>(rows: _rows, columns: _columns, elements: elems)
     }
     
-    func fold<F>(_ start : F, _ using : (F, Elem) -> F) -> F {
+    func fold<F>(_ start : F, _ using : (F, Element) -> F) -> F {
         var result = start
         for elem in elements {
             result = using(result, elem)
@@ -30,18 +30,18 @@ public extension Matrix {
         return result
     }
     
-    func fold(_ using : (Elem, Elem) -> Elem) -> Elem {
-        return fold(Elem.zero, using)
+    func fold(_ using : (Element, Element) -> Element) -> Element {
+        return fold(Element.zero, using)
     }
     
-    func forall(_ cond : (Elem) -> Bool) -> Bool {
+    func forall(_ cond : (Element) -> Bool) -> Bool {
         for elem in elements {
             guard cond(elem) else { return false }
         }
         return true
     }
 
-    func exists(_ cond : (Elem) -> Bool) -> Bool {
+    func exists(_ cond : (Element) -> Bool) -> Bool {
         for elem in elements {
             if cond(elem) { return true }
         }
