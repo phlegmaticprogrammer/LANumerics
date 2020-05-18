@@ -4,7 +4,7 @@ import simd
 
 final class LANumericsTests: XCTestCase {
 
-    public typealias Real = LANumeric & BinaryFloatingPoint
+    public typealias LAFP = LANumeric & BinaryFloatingPoint
     
     func countingMatrix<F : BinaryFloatingPoint>(rows : Int, columns : Int) -> Matrix<F> {
         return Matrix<F>(rows: rows, columns: columns) { r, c in
@@ -54,7 +54,7 @@ final class LANumericsTests: XCTestCase {
 
     func testManhattanNorm() {
         func add(_ n : Int) -> Int { n * (n + 1) / 2 }
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let u : Matrix<E> = countingMatrix(rows : 4, columns : 3)
             XCTAssertEqual(u.manhattanNorm, E(add(u.rows * u.columns)))
             XCTAssertEqual(u.manhattanNorm, u.fold { x, y in x + abs(y) })
@@ -66,7 +66,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testEuclideanNorm() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let u : Matrix<E> = randomMatrix()
             let l2 = u.euclideanNorm
             let sum = u.fold { x, y in x + y*y }
@@ -77,7 +77,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testInfinityNorm() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let u : Matrix<E> = randomMatrix()
             let norm = u.infinityNorm
             let result = u.fold { x, y in max(x, abs(y)) }
@@ -88,7 +88,7 @@ final class LANumericsTests: XCTestCase {
     }
     
     func testScaleAndAddFloat() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let m = Int.random(in: 1 ... 10)
             let n = Int.random(in: 1 ... 10)
             let u : Matrix<E> = randomMatrix(rows: m, columns: n)
@@ -108,7 +108,7 @@ final class LANumericsTests: XCTestCase {
     }
     
     func testIndexOfLargestElement() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let u : Matrix<E> = randomMatrix()
             let largest = abs(u.largest)
             XCTAssert(u.forall { x in largest >= abs(x) }, "largest = \(largest) in \(u)")
@@ -117,15 +117,15 @@ final class LANumericsTests: XCTestCase {
         stress { generic(Double.self) }
     }
     
-    func scale<E:Real>(_ alpha : E, _ vec : Vector<E>) -> Vector<E> {
+    func scale<E:LAFP>(_ alpha : E, _ vec : Vector<E>) -> Vector<E> {
         return vec.map { x in alpha * x }
     }
 
-    func scale<E:Real>(_ alpha : E, _ matrix : Matrix<E>) -> Matrix<E> {
+    func scale<E:LAFP>(_ alpha : E, _ matrix : Matrix<E>) -> Matrix<E> {
         return matrix.map { x in alpha * x }
     }
     
-    func mul<E:Real>(_ A : Matrix<E>, _ B : Matrix<E>) -> Matrix<E> {
+    func mul<E:LAFP>(_ A : Matrix<E>, _ B : Matrix<E>) -> Matrix<E> {
         let M = A.rows
         let N = B.columns
         let K = A.columns
@@ -143,7 +143,7 @@ final class LANumericsTests: XCTestCase {
         return C
     }
 
-    func dot<E:Real>(_ X : Vector<E>, _ Y : Vector<E>) -> E {
+    func dot<E:LAFP>(_ X : Vector<E>, _ Y : Vector<E>) -> E {
         precondition(X.count == Y.count)
         var sum : E = 0
         for i in 0 ..< X.count {
@@ -153,7 +153,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testScale() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             var X : Vector<E> = randomVector()
             let alpha : E = random()
             let Y = scale(alpha, X)
@@ -170,7 +170,7 @@ final class LANumericsTests: XCTestCase {
     }
     
     func testDotProduct() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let X : Vector<E> = randomVector()
             let Y : Vector<E> = randomVector(count: X.count)
             XCTAssertEqual(E.dotProduct(X, Y), dot(X, Y))
@@ -181,7 +181,7 @@ final class LANumericsTests: XCTestCase {
     }
     
     func testMatrixProduct() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let M = Int.random(in: 1 ... 10)
             let N = Int.random(in: 1 ... 10)
             let K = Int.random(in: 1 ... 10)
@@ -212,7 +212,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testMatrixVectorProduct() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let M = Int.random(in: 1 ... 10)
             let N = 1
             let K = Int.random(in: 1 ... 10)
@@ -241,7 +241,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testVectorVectorProduct() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let X : Matrix<E> = randomMatrix(rows: Int.random(in: 1 ... 10), columns: 1)
             let Y : Matrix<E> = randomMatrix(rows: 1, columns: Int.random(in: 1 ... 10))
             XCTAssertEqual(X.vector *′ Y.vector, mul(X, Y))
@@ -258,7 +258,7 @@ final class LANumericsTests: XCTestCase {
     }
     
     func testSIMDVectors() {
-        func generic<E : Real & SIMDScalar>(_ type : E.Type) {
+        func generic<E : LAFP & SIMDScalar>(_ type : E.Type) {
             func test(_ count : Int, transform : (Matrix<E>) -> Matrix<E>) {
                 let m : Matrix<E> = randomMatrix(rows: count, columns: 1)
                 XCTAssertEqual(m, transform(m))
@@ -381,7 +381,7 @@ final class LANumericsTests: XCTestCase {
     }
     
     func testSolveLinearEquations() {
-        func generic<E : Real>(_ type : E.Type) {
+        func generic<E : LAFP>(_ type : E.Type) {
             let A = Matrix<E>(rows: [[7, 5, -3], [3, -5, 2], [5, 3, -7]])
             var B = Matrix<E>([16, -8, 0])
             XCTAssert(E.solveLinearEquations(A, &B))
