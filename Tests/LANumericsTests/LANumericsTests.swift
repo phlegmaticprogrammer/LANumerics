@@ -30,7 +30,7 @@ final class LANumericsTests: XCTestCase {
         return X
     }
     
-    func stress(iterations : Int = 10, _ test : () -> Void) {
+    func stress(iterations : Int = 1000, _ test : () -> Void) {
         for _ in 0 ..< iterations {
             test()
         }
