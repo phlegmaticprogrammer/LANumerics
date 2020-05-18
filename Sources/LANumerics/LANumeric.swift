@@ -36,6 +36,8 @@ public protocol LANumeric : MatrixElement, Numeric {
 infix operator ′* : MultiplicationPrecedence
 infix operator *′ : MultiplicationPrecedence
 infix operator ′*′ : MultiplicationPrecedence
+infix operator ∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
+infix operator ∖? : MultiplicationPrecedence
 
 public extension Matrix where Element : LANumeric {
     
@@ -119,6 +121,27 @@ public extension Matrix where Element : LANumeric {
         var A = right
         A *= left
         return A
+    }
+    
+    static func ∖?(left : Matrix, right : Matrix) -> Matrix? {
+        var B = right
+        if Element.solveLinearEquations(left, &B) {
+            return B
+        } else {
+            return nil
+        }
+    }
+
+    static func ∖(left : Matrix, right : Matrix) -> Matrix {
+        return (left ∖? right)!
+    }
+    
+    static func ∖?(left : Matrix, right : Vector<Element>) -> Vector<Element>? {
+        return (left ∖? Matrix(right))?.vector
+    }
+
+    static func ∖(left : Matrix, right : Vector<Element>) -> Vector<Element> {
+        return (left ∖? Matrix(right))!.vector
     }
     
 }

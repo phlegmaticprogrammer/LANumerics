@@ -383,14 +383,13 @@ final class LANumericsTests: XCTestCase {
     func testSolveLinearEquations() {
         func generic<E : LAFP>(_ type : E.Type) {
             let A = Matrix<E>(rows: [[7, 5, -3], [3, -5, 2], [5, 3, -7]])
-            var B = Matrix<E>([16, -8, 0])
-            XCTAssert(E.solveLinearEquations(A, &B))
+            let B = Matrix<E>([16, -8, 0])
             let X = Matrix<E>([1, 3, 2])
-            XCTAssert((B - X).infinityNorm < 0.0001)
+            XCTAssert((A ∖ B - X).infinityNorm < 0.0001)
             let Z = Matrix<E>(rows: 3, columns: 3)
-            XCTAssert(!E.solveLinearEquations(Z, &B))
-            var Y = Matrix<E>([0, 0, 0])
-            XCTAssert(!E.solveLinearEquations(Z, &Y))
+            XCTAssertEqual(Z ∖? B, nil)
+            XCTAssertEqual(Z ∖? [0, 0, 0], nil)
+            XCTAssertEqual(A ∖ [0, 0, 0], [0, 0, 0])
         }
         generic(Float.self)
         generic(Double.self)

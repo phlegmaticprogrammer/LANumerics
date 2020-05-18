@@ -1,4 +1,4 @@
-postfix operator ′ // unicode character "Prime": 2082
+postfix operator ′ // unicode character "Prime": U+2032
 
 public postfix func ′<Element : MatrixElement>(vector : Vector<Element>) -> Matrix<Element> {
     return Matrix(row: vector)
