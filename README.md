@@ -1,3 +1,3 @@
 # LANumerics
 
-A description of this package.
+Numerical Linear Algebra for Swift. This is work in progress.
