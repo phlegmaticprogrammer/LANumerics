@@ -395,4 +395,33 @@ final class LANumericsTests: XCTestCase {
         generic(Double.self)
     }
 
+    func testSolveLinearLeastSquares() {
+        func generic<E : LAFP>(_ type : E.Type) {
+            let A = Matrix<E>(rows: [[7, 5, -3], [3, -5, 2], [5, 3, -7]])
+            let B = Matrix<E>([16, -8, 0])
+            let X = Matrix<E>([1, 3, 2])
+            XCTAssert((A ∖ B - X).infinityNorm < 0.0001)
+            XCTAssert((A′ ′∖ B - X).infinityNorm < 0.0001)
+            let Z = Matrix<E>(rows: 3, columns: 3)
+            XCTAssertEqual(Z ∖ B, Matrix<E>.zeros(3, 1))
+            XCTAssertEqual(Z ∖ [0, 0, 0], [0, 0, 0])
+            XCTAssertEqual(A ∖ [0, 0, 0], [0, 0, 0])
+        }
+        generic(Float.self)
+        generic(Double.self)
+    }
+    
+    func testLaeuchliExample() {
+        func generic<E : LAFP>(eps : E) {
+            let A = Matrix(rows: [[1, 1], [eps, 0], [0, eps]])
+            let b = [2, eps, eps]
+            XCTAssertNil((A′*A).solve(A′*b))
+            XCTAssert((A ∖ Matrix(b) - Matrix([1, 1])).infinityNorm < 10 * eps)
+            XCTAssert((A′ ′∖ Matrix(b) - Matrix([1, 1])).infinityNorm < 10 * eps)
+        }
+        generic(eps: Double(1e-16))
+        generic(eps: Float(1e-7))
+    }
+
+    
 }

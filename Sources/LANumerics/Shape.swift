@@ -60,7 +60,22 @@ public extension Matrix {
         A.reshape(rows: rows, columns: columns)
         return A
     }
-
+    
+    mutating func extend(rows : Int, columns : Int, with : Element = .zero) {
+        guard rows > _rows || columns > _columns else { return }
+        var result = Matrix(repeating: with, rows: max(_rows, rows), columns: max(_columns, columns))
+        result[0 ..< _rows, 0 ..< _columns] = self
+        self = result
+    }
+    
+    mutating func extend(rows : Int, with : Element = .zero) {
+        extend(rows: rows, columns: columns, with: with)
+    }
+    
+    mutating func extend(columns : Int, with : Element = .zero) {
+        extend(rows: rows, columns: columns, with: with)
+    }
+    
     /// - todo: This is a naive implementation, needs to be optimized.
     subscript <R : Collection, C : Collection>(rowIndices : R, columnIndices : C) -> Matrix where R.Element == Int, C.Element == Int {
         get {

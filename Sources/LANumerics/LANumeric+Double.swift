@@ -90,7 +90,35 @@ extension Double : LANumeric {
     }
     
     public static func solveLinearLeastSquares(_ A : Matrix<Self>, _ transposeA : Bool, _ B : Matrix<Self>) -> Matrix<Self>? {
-        fatalError()
+        var trans : Int8 = (transposeA ? 0x54 /* "T" */ : 0x4E /* "N" */)
+        var m : Int32 = Int32(A.rows)
+        var n : Int32 = Int32(A.columns)
+        let X = transposeA ? A.rows : A.columns
+        precondition(transposeA ? B.rows == n : B.rows == m)
+        var A = A
+        A.extend(rows: 1)
+        var B = B
+        B.extend(rows: Int(max(1, max(n, m))))
+        var nrhs : Int32 = Int32(B.columns)
+        var lda : Int32 = Int32(A.rows)
+        var ldb : Int32 = Int32(B.rows)
+        var lwork : Int32 = -1
+        var info : Int32 = 0
+        asMutablePointer(&A.elements) { A in
+            asMutablePointer(&B.elements) { B in
+                var workCount : Self = 0
+                dgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, &workCount, &lwork, &info)
+                guard info == 0 else { return }
+                print("workCount = \(workCount)")
+                var work = [Self](repeating: 0, count: Int(workCount))
+                print("size of work array is \(work.count)")
+                lwork = Int32(work.count)
+                dgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, &work, &lwork, &info)
+            }
+        }
+        guard info == 0 else { return nil }
+        print("successfully solved, now preparing result")
+        return B[0 ..< X, 0 ..< B.columns]
     }
 
 }
