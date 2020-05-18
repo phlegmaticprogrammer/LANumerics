@@ -406,6 +406,7 @@ final class LANumericsTests: XCTestCase {
             XCTAssertEqual(Z ∖ B, Matrix<E>.zeros(3, 1))
             XCTAssertEqual(Z ∖ [0, 0, 0], [0, 0, 0])
             XCTAssertEqual(A ∖ [0, 0, 0], [0, 0, 0])
+            XCTAssertEqual(Matrix<E>() ∖ [], [])
         }
         generic(Float.self)
         generic(Double.self)

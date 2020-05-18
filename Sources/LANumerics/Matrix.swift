@@ -25,6 +25,12 @@ public struct Matrix<Element : MatrixElement> : MatrixElement {
         return _columns
     }
         
+    public init() {
+        self._rows = 0
+        self._columns = 0
+        self.elements = []
+    }
+    
     public init(repeating : Element = Element.zero, rows : Int, columns : Int) {
         precondition(rows >= 0 && columns >= 0)
         self._rows = rows
@@ -131,7 +137,7 @@ public struct Matrix<Element : MatrixElement> : MatrixElement {
     }
     
     public static var zero: Matrix<Element> {
-        return Matrix<Element>(rows: 0, columns: 0)
+        return Matrix<Element>()
     }
     
 }
