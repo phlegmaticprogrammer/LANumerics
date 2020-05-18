@@ -30,6 +30,10 @@ public protocol LANumeric : MatrixElement, Numeric {
     /// Solves the system of linear equations `A * X = B` and stores the result `X` in `B`. 
     /// - returns: `true` if the operation completed successfully, `false` otherwise.
     static func solveLinearEquations(_ A : Matrix<Self>, _ B : inout Matrix<Self>) -> Bool
+    
+    /// Finds the minimum least squares solutions `x` of minimizing `(b - A * x).euclideanNorm` or `(b - A′ * x).euclideanNorm` and returns the result.
+    /// Each column `x` in the result corresponds to the solution for the corresponding column `b` in `B`.
+    static func solveLinearLeastSquares(_ A : Matrix<Self>, _ transposeA : Bool, _ B : Matrix<Self>) -> Matrix<Self>?
 
 }
 
@@ -37,6 +41,7 @@ infix operator ′* : MultiplicationPrecedence
 infix operator *′ : MultiplicationPrecedence
 infix operator ′*′ : MultiplicationPrecedence
 infix operator ∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
+infix operator ′∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
 
 public extension Matrix where Element : LANumeric {
     
@@ -132,14 +137,32 @@ public extension Matrix where Element : LANumeric {
     }
     
     func solve(_ rhs : Vector<Element>) -> Vector<Element>? {
-        var B = Matrix(rhs)
-        if Element.solveLinearEquations(self, &B) {
-            return B.vector
-        } else {
-            return nil
-        }
+        return solve(Matrix(rhs))?.vector
+    }
+    
+    func solveLeastSquares(transpose : Bool = false, _ rhs : Matrix) -> Matrix? {
+        return Element.solveLinearLeastSquares(self, transpose, rhs)
+    }
+    
+    func solveLeastSquares(transpose : Bool = false, _ rhs : Vector<Element>) -> Vector<Element>? {
+        return Element.solveLinearLeastSquares(self, transpose, Matrix(rhs))?.vector
+    }
+    
+    static func ∖(lhs : Matrix, rhs : Matrix) -> Matrix {
+        return lhs.solveLeastSquares(rhs)!
+    }
+    
+    static func ∖(lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
+        return lhs.solveLeastSquares(rhs)!
     }
 
+    static func ′∖(lhs : Matrix, rhs : Matrix) -> Matrix {
+        return lhs.solveLeastSquares(transpose: true, rhs)!
+    }
+    
+    static func ′∖(lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
+        return lhs.solveLeastSquares(transpose: true, rhs)!
+    }
 }
 
 public extension Matrix where Element : LANumeric {

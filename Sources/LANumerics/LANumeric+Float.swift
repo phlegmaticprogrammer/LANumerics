@@ -88,6 +88,11 @@ extension Float : LANumeric {
         }
         return info == 0
     }
+    
+    public static func solveLinearLeastSquares(_ A : Matrix<Self>, _ transposeA : Bool, _ B : Matrix<Self>) -> Matrix<Self>? {
+        fatalError()
+    }
+
 
 }
 
