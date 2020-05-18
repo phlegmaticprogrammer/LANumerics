@@ -58,11 +58,11 @@ public extension Matrix where Element : LANumeric {
         }
     }
         
-    static func +(left : Matrix, right : Matrix) -> Matrix {
+    static func + (left : Matrix, right : Matrix) -> Matrix {
         return left.scaleAndAdd(1, 1, right)
     }
     
-    static func -(left : Matrix, right : Matrix) -> Matrix {
+    static func - (left : Matrix, right : Matrix) -> Matrix {
         return left.scaleAndAdd(1, -1, right)
     }
     
@@ -81,47 +81,47 @@ public extension Matrix where Element : LANumeric {
         return Matrix(diagonal : [Element](repeating: 1, count: m))
     }
     
-    static func *(left : Matrix, right : Matrix) -> Matrix {
+    static func * (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.rows, columns: right.columns)
         Element.matrixProduct(1, false, left, false, right, 0, &C)
         return C
     }
     
-    static func ′*(left : Matrix, right : Matrix) -> Matrix {
+    static func ′* (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.columns, columns: right.columns)
         Element.matrixProduct(1, true, left, false, right, 0, &C)
         return C
     }
 
-    static func *′(left : Matrix, right : Matrix) -> Matrix {
+    static func *′ (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.rows, columns: right.rows)
         Element.matrixProduct(1, false, left, true, right, 0, &C)
         return C
     }
 
-    static func ′*′(left : Matrix, right : Matrix) -> Matrix {
+    static func ′*′ (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.columns, columns: right.rows)
         Element.matrixProduct(1, true, left, true, right, 0, &C)
         return C
     }
 
-    static func *(left : Matrix, right : Vector<Element>) -> Vector<Element> {
+    static func * (left : Matrix, right : Vector<Element>) -> Vector<Element> {
         var Y = [Element](repeating: Element.zero, count: left.rows)
         Element.matrixVectorProduct(1, false, left, right, 0, &Y)
         return Y
     }
     
-    static func ′*(left : Matrix, right : Vector<Element>) -> Vector<Element> {
+    static func ′* (left : Matrix, right : Vector<Element>) -> Vector<Element> {
         var Y = [Element](repeating: Element.zero, count: left.columns)
         Element.matrixVectorProduct(1, true, left, right, 0, &Y)
         return Y
     }
 
-    static func *=(left : inout Matrix, right : Element) {
+    static func *= (left : inout Matrix, right : Element) {
         Element.scaleVector(right, &left.elements)
     }
     
-    static func *(left : Element, right : Matrix) -> Matrix {
+    static func * (left : Element, right : Matrix) -> Matrix {
         var A = right
         A *= left
         return A
@@ -148,19 +148,19 @@ public extension Matrix where Element : LANumeric {
         return Element.solveLinearLeastSquares(self, transpose, Matrix(rhs))?.vector
     }
     
-    static func ∖(lhs : Matrix, rhs : Matrix) -> Matrix {
+    static func ∖ (lhs : Matrix, rhs : Matrix) -> Matrix {
         return lhs.solveLeastSquares(rhs)!
     }
     
-    static func ∖(lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
+    static func ∖ (lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
         return lhs.solveLeastSquares(rhs)!
     }
 
-    static func ′∖(lhs : Matrix, rhs : Matrix) -> Matrix {
+    static func ′∖ (lhs : Matrix, rhs : Matrix) -> Matrix {
         return lhs.solveLeastSquares(transpose: true, rhs)!
     }
     
-    static func ′∖(lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
+    static func ′∖ (lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
         return lhs.solveLeastSquares(transpose: true, rhs)!
     }
 }
