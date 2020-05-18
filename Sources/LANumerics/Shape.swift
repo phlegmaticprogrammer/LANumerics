@@ -13,7 +13,7 @@ public typealias BlockMatrix<Elem : MatrixElement> = Matrix<Matrix<Elem>>
 public extension Matrix {
     
     mutating func transpose() {
-        if _rows > 1 || _columns > 1 {
+        if _rows > 1 && _columns > 1 {
             var transposedElements = elements
             asPointer(elements) { elements in
                 asMutablePointer(&transposedElements) { transposedElements in
