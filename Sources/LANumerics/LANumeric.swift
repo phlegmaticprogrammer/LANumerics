@@ -37,7 +37,6 @@ infix operator ′* : MultiplicationPrecedence
 infix operator *′ : MultiplicationPrecedence
 infix operator ′*′ : MultiplicationPrecedence
 infix operator ∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
-infix operator ∖? : MultiplicationPrecedence
 
 public extension Matrix where Element : LANumeric {
     
@@ -122,28 +121,25 @@ public extension Matrix where Element : LANumeric {
         A *= left
         return A
     }
-    
-    static func ∖?(left : Matrix, right : Matrix) -> Matrix? {
-        var B = right
-        if Element.solveLinearEquations(left, &B) {
+        
+    func solve(_ rhs : Matrix) -> Matrix? {
+        var B = rhs
+        if Element.solveLinearEquations(self, &B) {
             return B
         } else {
             return nil
         }
     }
-
-    static func ∖(left : Matrix, right : Matrix) -> Matrix {
-        return (left ∖? right)!
-    }
     
-    static func ∖?(left : Matrix, right : Vector<Element>) -> Vector<Element>? {
-        return (left ∖? Matrix(right))?.vector
+    func solve(_ rhs : Vector<Element>) -> Vector<Element>? {
+        var B = Matrix(rhs)
+        if Element.solveLinearEquations(self, &B) {
+            return B.vector
+        } else {
+            return nil
+        }
     }
 
-    static func ∖(left : Matrix, right : Vector<Element>) -> Vector<Element> {
-        return (left ∖? Matrix(right))!.vector
-    }
-    
 }
 
 public extension Matrix where Element : LANumeric {
