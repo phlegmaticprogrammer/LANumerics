@@ -415,7 +415,7 @@ final class LANumericsTests: XCTestCase {
         generic(Double.self)
     }
     
-    func testLaeuchliExample() {
+    func testLäuchliExample() {
         func generic<E : LAFP>(eps : E) {
             let A = Matrix(rows: [[1, 1], [eps, 0], [0, eps]])
             let b = [2, eps, eps]
