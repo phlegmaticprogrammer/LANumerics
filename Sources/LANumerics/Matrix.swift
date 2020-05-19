@@ -88,7 +88,7 @@ public struct Matrix<Element : MatrixElement> : MatrixElement {
         self._rows = rows
         self._columns = columns
         self.elements = [Element](repeating: Element.zero, count: rows * columns)
-        for i in 0 ..< columns {
+        for i in 0 ..< m {
             self[i, i] = diagonal[i]
         }
     }

@@ -2,6 +2,14 @@ public enum SVDJob {
     case all
     case singular
     case none
+    
+    var lapackJob : Int8 {
+        switch self {
+        case .all: return 0x41 /* "A" */
+        case .singular: return 0x53 /* "S" */
+        case .none: return 0x4E /* "N" */
+        }
+    }
 }
 
 public protocol LANumeric : MatrixElement, Numeric {
@@ -41,7 +49,7 @@ public protocol LANumeric : MatrixElement, Numeric {
     /// Each column `x` in the result corresponds to the solution for the corresponding column `b` in `B`.
     static func solveLinearLeastSquares(_ A : Matrix<Self>, _ transposeA : Bool, _ B : Matrix<Self>) -> Matrix<Self>?
         
-    /// Computes the singular value decomposition of a matrix`A` with `m` rows and `n` columns such that `A == left * D * right`.
+    /// Computes the singular value decomposition of a matrix`A` with `m` rows and `n` columns such that `A ≈ left * D * right`.
     /// Here `D == Matrix(rows: m, columns: n, diagonal: singularValues)` and `singularValues` has `min(m, n)` elements.
     /// The result matrix `left` has `m` rows, and depending on its job parameter either `m` (`all`), `min(m, n)` (`singular`) or `0` (`none`) columns.
     /// The result matrix `right` has `n` columns, and depending on its job parameter either `n` (`all`), `min(m, n)` (`singular`) or `0` (`none`) rows.
@@ -98,6 +106,11 @@ public extension Matrix where Element : LANumeric {
     static func eye(_ m : Int) -> Matrix {
         return Matrix(diagonal : [Element](repeating: 1, count: m))
     }
+    
+    static func eye(_ m : Int, _ n : Int) -> Matrix {
+        return Matrix(rows: m, columns: n, diagonal : [Element](repeating: 1, count: min(n, m)))
+    }
+
     
     static func * (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.rows, columns: right.columns)

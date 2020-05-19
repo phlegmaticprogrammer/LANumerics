@@ -89,8 +89,8 @@ final class LANumericsTests: XCTestCase {
     
     func testScaleAndAddFloat() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let m = Int.random(in: 1 ... 10)
-            let n = Int.random(in: 1 ... 10)
+            let m = Int.random(in: 0 ... 10)
+            let n = Int.random(in: 0 ... 10)
             let u : Matrix<E> = randomMatrix(rows: m, columns: n)
             let v : Matrix<E> = randomMatrix(rows: m, columns: n)
             let alpha : E = random()
@@ -183,9 +183,9 @@ final class LANumericsTests: XCTestCase {
     
     func testMatrixProduct() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let M = Int.random(in: 1 ... 10)
-            let N = Int.random(in: 1 ... 10)
-            let K = Int.random(in: 1 ... 10)
+            let M = Int.random(in: 0 ... 10)
+            let N = Int.random(in: 0 ... 10)
+            let K = Int.random(in: 0 ... 10)
             let A : Matrix<E> = randomMatrix(rows: M, columns: K)
             let B : Matrix<E> = randomMatrix(rows: K, columns: N)
             XCTAssertEqual(A * B, mul(A, B))
@@ -208,15 +208,17 @@ final class LANumericsTests: XCTestCase {
             test(transposeA: true, transposeB: false)
             test(transposeA: true, transposeB: true)
         }
-        stress { generic(Float.self) }
-        stress { generic(Double.self) }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+        }
     }
 
     func testMatrixVectorProduct() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let M = Int.random(in: 1 ... 10)
+            let M = Int.random(in: 0 ... 10)
             let N = 1
-            let K = Int.random(in: 1 ... 10)
+            let K = Int.random(in: 0 ... 10)
             let A : Matrix<E> = randomMatrix(rows: M, columns: K)
             let B : Matrix<E> = randomMatrix(rows: K, columns: N)
             XCTAssertEqual(A * B.vector, mul(A, B).vector)
@@ -243,8 +245,8 @@ final class LANumericsTests: XCTestCase {
 
     func testVectorVectorProduct() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let X : Matrix<E> = randomMatrix(rows: Int.random(in: 1 ... 10), columns: 1)
-            let Y : Matrix<E> = randomMatrix(rows: 1, columns: Int.random(in: 1 ... 10))
+            let X : Matrix<E> = randomMatrix(rows: Int.random(in: 0 ... 10), columns: 1)
+            let Y : Matrix<E> = randomMatrix(rows: 1, columns: Int.random(in: 0 ... 10))
             XCTAssertEqual(X.vector *′ Y.vector, mul(X, Y))
             var A : Matrix<E> = randomMatrix(rows: X.rows, columns: Y.columns)
             let alpha : E = random()
@@ -423,6 +425,43 @@ final class LANumericsTests: XCTestCase {
         }
         generic(eps: Double(1e-16))
         generic(eps: Float(1e-7))
+    }
+    
+    func testSingularValueDecomposition() {
+        func generic<E : LAFP>(_ type : E.Type) {
+            func same(_ X : Matrix<E>, _ Y : Matrix<E>) {
+                let norm = (X - Y).infinityNorm
+                XCTAssert(norm < 0.001, "norm is \(norm), X = \(X), Y = \(Y)")
+            }
+            func isSame(_ X : Matrix<E>, _ Y : Matrix<E>) -> Bool {
+                let norm = (X - Y).infinityNorm
+                return norm < 0.001
+            }
+            let A : Matrix<E> = randomMatrix()
+            let m = A.rows
+            let n = A.columns
+            let k = min(m, n)
+            let svd = A.svd()
+            XCTAssertEqual(svd.singularValues.count, k)
+            XCTAssert(svd.left.hasDimensions(m, m))
+            XCTAssert(svd.right.hasDimensions(n, n))
+            same(svd.left ′* svd.left, .eye(m))
+            same(svd.right ′* svd.right, .eye(n))
+            let D = Matrix<E>(rows: A.rows, columns: A.columns, diagonal: svd.singularValues)
+            same(svd.left * D * svd.right, A)
+            let svdS = A.svd(left: .singular, right: .singular)
+            same(Matrix(svd.singularValues), Matrix(svdS.singularValues))
+            same(svd.left[0 ..< m, 0 ..< k], svdS.left)
+            same(svd.right[0 ..< k, 0 ..< n], svdS.right)
+            let svdN = A.svd(left: .none, right: .none)
+            same(Matrix(svd.singularValues), Matrix(svdN.singularValues))
+            same(svd.left[0 ..< m, 0 ..< 0], svdN.left)
+            same(svd.right[0 ..< 0, 0 ..< n], svdN.right)
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+        }
     }
 
     

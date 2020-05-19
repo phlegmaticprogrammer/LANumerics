@@ -42,6 +42,10 @@ extension Float : LANumeric {
         precondition(KA == KB)
         precondition(M == C.rows)
         precondition(N == C.columns)
+        guard M > 0 && N > 0 && KA > 0 else {
+            scaleVector(beta, &C.elements)
+            return
+        }
         asMutablePointer(&C.elements) { C in
             let ta = transposeA ? CblasTrans : CblasNoTrans
             let tb = transposeB ? CblasTrans : CblasNoTrans
@@ -54,6 +58,10 @@ extension Float : LANumeric {
         let N = Int32(A.columns)
         precondition(transposeA ? (N == Y.count) : (N == X.count))
         precondition(transposeA ? (M == X.count) : (M == Y.count))
+        guard M > 0 else {
+            scaleVector(beta, &Y)
+            return
+        }
         asMutablePointer(&Y) { Y in
             let ta = transposeA ? CblasTrans : CblasNoTrans
             cblas_sgemv(CblasColMajor, ta, M, N, alpha, A.elements, M, X, 1, beta, Y, 1)
@@ -65,6 +73,7 @@ extension Float : LANumeric {
         let N = Int32(A.columns)
         precondition(M == X.count)
         precondition(N == Y.count)
+        guard M > 0 && N > 0 else { return }
         asMutablePointer(&A.elements) { A in
             cblas_sger(CblasColMajor, M, N, alpha, X, 1, Y, 1, A, M)
         }
@@ -109,20 +118,69 @@ extension Float : LANumeric {
                 var workCount : Self = 0
                 sgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, &workCount, &lwork, &info)
                 guard info == 0 else { return }
-                print("workCount = \(workCount)")
                 var work = [Self](repeating: 0, count: Int(workCount))
-                print("size of work array is \(work.count)")
                 lwork = Int32(work.count)
                 sgels_(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, &work, &lwork, &info)
             }
         }
         guard info == 0 else { return nil }
-        print("successfully solved, now preparing result")
         return B[0 ..< X, 0 ..< B.columns]
     }
 
     public static func singularValueDecomposition(_ A : Matrix<Self>, left : SVDJob, right : SVDJob) -> (singularValues : Vector<Self>, left : Matrix<Self>, right : Matrix<Self>)? {
-        fatalError()
+        var m = Int32(A.rows)
+        var n = Int32(A.columns)
+        let k = min(m, n)
+        let leftColumns : Int32
+        switch left {
+        case .all: leftColumns = m
+        case .singular: leftColumns = k
+        case .none: leftColumns = 0
+        }
+        let rightRows : Int32
+        switch right {
+        case .all: rightRows = n
+        case .singular: rightRows = k
+        case .none: rightRows = 0
+        }
+        guard k > 0 else {
+            let U : Matrix<Self> = .eye(Int(m), Int(leftColumns))
+            let VT : Matrix<Self> = .eye(Int(rightRows), Int(n))
+            return (singularValues: [], left: U, right: VT)
+        }
+        var A = A
+        var lda = m
+        var S = Vector<Self>(repeating: 0, count: Int(k))
+        var ldu = m
+        var U = Matrix<Self>(rows: Int(ldu), columns: Int(leftColumns))
+        var ldvt = max(1, rightRows)
+        var VT = Matrix<Self>(rows: Int(ldvt), columns: Int(n))
+        var jobleft = left.lapackJob
+        var jobright = right.lapackJob
+        var info : Int32 = 0
+        var lwork : Int32 = -1
+        asMutablePointer(&A.elements) { A in
+            asMutablePointer(&S) { S in
+                asMutablePointer(&U.elements) { U in
+                    asMutablePointer(&VT.elements) { VT in
+                        var workCount : Self = 0
+                        sgesvd_(&jobleft, &jobright, &m, &n, A, &lda, S, U, &ldu, VT, &ldvt, &workCount, &lwork, &info)
+                        guard info == 0 else { return }
+                        var work = [Self](repeating: 0, count: Int(workCount))
+                        lwork = Int32(work.count)
+                        sgesvd_(&jobleft, &jobright, &m, &n, A, &lda, S, U, &ldu, VT, &ldvt, &work, &lwork, &info)
+                    }
+                }
+            }
+        }
+        if info == 0 {
+            if rightRows == 0 {
+                VT = Matrix<Self>(rows: 0, columns: VT.columns)
+            }
+            return (singularValues: S, left: U, right: VT)
+        } else {
+            return nil
+        }
     }
 
 }
