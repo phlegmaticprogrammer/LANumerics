@@ -95,7 +95,8 @@ final class LANumericsTests: XCTestCase {
             let v : Matrix<E> = randomMatrix(rows: m, columns: n)
             let alpha : E = random()
             let beta : E = random()
-            let result = u.scaleAndAdd(alpha, beta, v)
+            var result = u
+            result.accumulate(alpha, beta, v)
             let spec = u.combine(v) { x, y in alpha * x + beta * y}
             XCTAssertEqual(result, spec)
             XCTAssertEqual(u + v, u.combine(v, { x, y in x + y }))

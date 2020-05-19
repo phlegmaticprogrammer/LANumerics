@@ -59,19 +59,25 @@ public extension Matrix where Element : LANumeric {
     }
         
     static func + (left : Matrix, right : Matrix) -> Matrix {
-        return left.scaleAndAdd(1, 1, right)
-    }
-    
-    static func - (left : Matrix, right : Matrix) -> Matrix {
-        return left.scaleAndAdd(1, -1, right)
-    }
-    
-    func scaleAndAdd(_ alpha : Element, _ beta : Element, _ other : Matrix<Element>) -> Matrix<Element> {
-        var result = self
-        result.accumulate(alpha, beta, other)
+        var result = left
+        result += right
         return result
     }
     
+    static func - (left : Matrix, right : Matrix) -> Matrix {
+        var result = left
+        result -= right
+        return result
+    }
+    
+    static func += (left : inout Matrix, right : Matrix) {
+        left.accumulate(1, 1, right)
+    }
+    
+    static func -= (left : inout Matrix, right : Matrix) {
+        left.accumulate(1, -1, right)
+    }
+        
     mutating func accumulate(_ alpha : Element, _ beta : Element, _ other : Matrix<Element>) {
         precondition(hasSameDimensions(other))
         Element.scaleAndAddVectors(beta, other.elements, alpha, &self.elements)
