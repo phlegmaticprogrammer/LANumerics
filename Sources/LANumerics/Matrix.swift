@@ -79,9 +79,15 @@ public struct Matrix<Element : MatrixElement> : MatrixElement {
         
     public init(diagonal : Vector<Element>) {
         let m = diagonal.count
-        self._rows = m
-        self._columns = m
-        self.elements = [Element](repeating: Element.zero, count: m * m)
+        self.init(rows: m, columns: m, diagonal: diagonal)
+    }
+    
+    public init(rows : Int, columns : Int, diagonal : Vector<Element>) {
+        let m = diagonal.count
+        precondition(m <= min(rows, columns))
+        self._rows = rows
+        self._columns = columns
+        self.elements = [Element](repeating: Element.zero, count: rows * columns)
         for i in 0 ..< columns {
             self[i, i] = diagonal[i]
         }

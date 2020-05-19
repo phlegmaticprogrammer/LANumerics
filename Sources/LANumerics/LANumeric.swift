@@ -1,3 +1,9 @@
+public enum SVDJob {
+    case all
+    case singular
+    case none
+}
+
 public protocol LANumeric : MatrixElement, Numeric {
 
     /// Computes the sum of the absolute values of all elements in `vector`.
@@ -34,6 +40,12 @@ public protocol LANumeric : MatrixElement, Numeric {
     /// Finds the minimum least squares solutions `x` of minimizing `(b - A * x).euclideanNorm` or `(b - A′ * x).euclideanNorm` and returns the result.
     /// Each column `x` in the result corresponds to the solution for the corresponding column `b` in `B`.
     static func solveLinearLeastSquares(_ A : Matrix<Self>, _ transposeA : Bool, _ B : Matrix<Self>) -> Matrix<Self>?
+        
+    /// Computes the singular value decomposition of a matrix`A` with `m` rows and `n` columns such that `A == left * D * right`.
+    /// Here `D == Matrix(rows: m, columns: n, diagonal: singularValues)` and `singularValues` has `min(m, n)` elements.
+    /// The result matrix `left` has `m` rows, and depending on its job parameter either `m` (`all`), `min(m, n)` (`singular`) or `0` (`none`) columns.
+    /// The result matrix `right` has `n` columns, and depending on its job parameter either `n` (`all`), `min(m, n)` (`singular`) or `0` (`none`) rows.
+    static func singularValueDecomposition(_ A : Matrix<Self>, left : SVDJob, right : SVDJob) -> (singularValues : Vector<Self>, left : Matrix<Self>, right : Matrix<Self>)?
 
 }
 
@@ -152,6 +164,10 @@ public extension Matrix where Element : LANumeric {
     
     func solveLeastSquares(transpose : Bool = false, _ rhs : Vector<Element>) -> Vector<Element>? {
         return Element.solveLinearLeastSquares(self, transpose, Matrix(rhs))?.vector
+    }
+    
+    func svd(left : SVDJob = .all, right : SVDJob = .all) -> (singularValues : Vector<Element>, left : Matrix, right : Matrix) {
+        return Element.singularValueDecomposition(self, left: left, right: right)!
     }
     
     static func ∖ (lhs : Matrix, rhs : Matrix) -> Matrix {

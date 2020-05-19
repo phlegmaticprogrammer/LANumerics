@@ -121,6 +121,9 @@ extension Float : LANumeric {
         return B[0 ..< X, 0 ..< B.columns]
     }
 
+    public static func singularValueDecomposition(_ A : Matrix<Self>, left : SVDJob, right : SVDJob) -> (singularValues : Vector<Self>, left : Matrix<Self>, right : Matrix<Self>)? {
+        fatalError()
+    }
 
 }
 
