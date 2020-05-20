@@ -71,7 +71,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testNorm() {
-        func generic<E : Num>(_ type : E.Type) where E.Magnitude : LANumeric {
+        func generic<E : Num>(_ type : E.Type) {
             let u : Matrix<E> = randomWholeMatrix()
             let l2 = u.norm
             let sum = u.fold(0) { x, y in x + y.lengthSquared }

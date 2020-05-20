@@ -45,7 +45,7 @@ public enum Transpose {
     }
 }
 
-public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral where Magnitude : MatrixElement {
+public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral where Magnitude : LANumeric {
         
     init(magnitude : Self.Magnitude)
 

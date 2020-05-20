@@ -27,7 +27,7 @@ extension Complex : MatrixElement {
 }
 
 
-extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : MatrixElement {
+extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANumeric {
         
     public typealias FloatLiteralType = Double
     
