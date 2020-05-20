@@ -20,6 +20,8 @@ public protocol LANumericPrimitives : MatrixElement, Numeric, ExpressibleByFloat
     
     static func blas_nrm2(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32) -> Self.Magnitude
     
+    static func blas_scal(_ N : Int32, _ alpha : Self, _ X : UnsafeMutablePointer<Self>, _ incX : Int32)
+    
 }
 
 extension Float : LANumericPrimitives {
@@ -46,6 +48,10 @@ extension Float : LANumericPrimitives {
     
     public static func blas_nrm2(_ N: Int32, _ X: UnsafePointer<Self>, _ incX: Int32) -> Self.Magnitude {
         return cblas_snrm2(N, X, incX)
+    }
+
+    public static func blas_scal(_ N : Int32, _ alpha : Self, _ X : UnsafeMutablePointer<Self>, _ incX : Int32) {
+        cblas_sscal(N, alpha, X, incX)
     }
 
 }
@@ -76,24 +82,43 @@ extension Double : LANumericPrimitives {
         return cblas_dnrm2(N, X, incX)
     }
 
+    public static func blas_scal(_ N : Int32, _ alpha : Self, _ X : UnsafeMutablePointer<Self>, _ incX : Int32) {
+        cblas_dscal(N, alpha, X, incX)
+    }
+
 }
 
 extension Complex : ExpressibleByFloatLiteral {
 
     public typealias FloatLiteralType = Double
     
-    public init(floatLiteral: Self.FloatLiteralType) {
-        let x : RealType
+    static func dispatch<R>(float : () -> R, double : () -> R) -> R {
         if RealType.self == Float.self {
-            x = Float(floatLiteral) as! RealType
+            return float()
         } else if RealType.self == Double.self {
-            x = Double(floatLiteral) as! RealType
+            return double()
         } else {
-            fatalError()
+            fatalError("cannot dispatch on Complex.RealType == \(RealType.self)")
         }
+    }
+    
+    public init(floatLiteral: Self.FloatLiteralType) {
+        var x : RealType = 0
+        Complex.dispatch(
+            float: { x = Float(floatLiteral) as! RealType },
+            double: { x = Double(floatLiteral) as! RealType }
+        )
         self.init(x)
     }
     
+    public static func blas_scal(_ N : Int32, _ alpha : Self, _ X : UnsafeMutablePointer<Self>, _ incX : Int32) {
+        var _alpha = alpha
+        dispatch(
+            float: { cblas_cscal(N, &_alpha, X, incX) },
+            double: { cblas_zscal(N, &_alpha, X, incX) }
+        )
+    }
+
 }
 
 

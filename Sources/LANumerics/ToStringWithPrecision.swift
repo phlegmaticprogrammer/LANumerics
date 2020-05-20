@@ -1,4 +1,5 @@
 import Foundation
+import Numerics
 
 public protocol ToStringWithPrecision {
         
@@ -28,6 +29,37 @@ extension Double : ToStringWithPrecision {
         }
     }
     
+}
+
+extension Complex : ToStringWithPrecision {
+    
+    public func toString(precision : Int?) -> String {
+        return Complex.dispatch(
+            float: {
+                let x = (real as! Float).toString(precision: precision)
+                let y = (imaginary as! Float).toString(precision: precision)
+                if imaginary.isZero {
+                    return x
+                } else if real.isZero {
+                    return "\(y)i"
+                } else {
+                    return "\(x) + \(y)i"
+                }
+            },
+            double: {
+                let x = (real as! Double).toString(precision: precision)
+                let y = (imaginary as! Double).toString(precision: precision)
+                if imaginary.isZero {
+                    return x
+                } else if real.isZero {
+                    return "\(y)i"
+                } else {
+                    return "\(x) + \(y)i"
+                }
+            }
+        )
+    }
+
 }
 
 extension Matrix : ToStringWithPrecision, CustomStringConvertible where Element : ToStringWithPrecision {

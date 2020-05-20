@@ -7,6 +7,7 @@ final class LANumericsTests: XCTestCase {
 
     public typealias LAFP = LANumeric & LANumericPrimitives & ExpressibleByFloatLiteral
     public typealias BLAFP = LAFP & BinaryFloatingPoint
+    public typealias Num = LANumericPrimitives
 
     func countingMatrix<F : LAFP>(rows : Int, columns : Int) -> Matrix<F> {
         return Matrix<F>(rows: rows, columns: columns) { r, c in
@@ -120,15 +121,15 @@ final class LANumericsTests: XCTestCase {
         stress { generic(Double.self) }
     }
     
-    func scale<E:LAFP>(_ alpha : E, _ vec : Vector<E>) -> Vector<E> {
+    func scale<E:Num>(_ alpha : E, _ vec : Vector<E>) -> Vector<E> {
         return vec.map { x in alpha * x }
     }
 
-    func scale<E:LAFP>(_ alpha : E, _ matrix : Matrix<E>) -> Matrix<E> {
+    func scale<E:Num>(_ alpha : E, _ matrix : Matrix<E>) -> Matrix<E> {
         return matrix.map { x in alpha * x }
     }
     
-    func mul<E:LAFP>(_ A : Matrix<E>, _ B : Matrix<E>) -> Matrix<E> {
+    func mul<E:Num>(_ A : Matrix<E>, _ B : Matrix<E>) -> Matrix<E> {
         let M = A.rows
         let N = B.columns
         let K = A.columns
@@ -146,7 +147,7 @@ final class LANumericsTests: XCTestCase {
         return C
     }
 
-    func dot<E:LAFP>(_ X : Vector<E>, _ Y : Vector<E>) -> E {
+    func dot<E:Num>(_ X : Vector<E>, _ Y : Vector<E>) -> E {
         precondition(X.count == Y.count)
         var sum : E = 0
         for i in 0 ..< X.count {
@@ -155,17 +156,17 @@ final class LANumericsTests: XCTestCase {
         return sum
     }
     
-    func epsilon<E : LANumericPrimitives>(_ type : E.Type) -> E.Magnitude {
+    func epsilon<E : Num>(_ type : E.Type) -> E.Magnitude {
         let e : E = 0.01
         return e.magnitude
     }
     
-    func XCTSame<E : LAFP>(_ X : Matrix<E>, _ Y : Matrix<E>) {
+    func XCTSame<E : LANumeric & Num>(_ X : Matrix<E>, _ Y : Matrix<E>) {
         let norm = (X - Y).infinityNorm
         XCTAssert(norm < epsilon(E.self), "norm is \(norm), X = \(X), Y = \(Y)")
     }
 
-    func XCTSame<E : LANumericPrimitives>(_ X : E, _ Y : E) {
+    func XCTSame<E : Num>(_ X : E, _ Y : E) {
         let norm = (X - Y).magnitude
         let e : E.Magnitude = epsilon(E.self)
         XCTAssert(norm < e, "norm is \(norm), X = \(X), Y = \(Y)")
@@ -483,7 +484,7 @@ final class LANumericsTests: XCTestCase {
     }
     
     func test_blas_asum() {
-        func generic<E : LANumericPrimitives>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             let v : Vector<E> = randomWholeVector()
             let asum = Matrix(v).fold(0) { x, y in x + y.manhattanLength }
             let blas_asum = E.blas_asum(Int32(v.count), v, 1)
@@ -498,11 +499,27 @@ final class LANumericsTests: XCTestCase {
     }
 
     func test_blas_nrm2() {
-        func generic<E : LANumericPrimitives>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             let v : Vector<E> = randomWholeVector()
             let nrm2_squared = Matrix(v).fold(0) { x, y in x + y.lengthSquared }
             let blas_nrm2 = E.blas_nrm2(Int32(v.count), v, 1)
             XCTSame(E(magnitude: nrm2_squared), E(magnitude: blas_nrm2 * blas_nrm2))
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
+        
+    func test_blas_scal() {
+        func generic<E : Num>(_ type : E.Type) {
+            var v : Vector<E> = randomWholeVector()
+            let alpha : E = randomWhole()
+            let result = scale(alpha, v)
+            E.blas_scal(Int32(v.count), alpha, &v, 1)
+            XCTAssertEqual(v, result)
         }
         stress {
             generic(Float.self)
