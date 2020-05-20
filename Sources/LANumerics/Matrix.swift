@@ -2,6 +2,8 @@ public protocol MatrixElement : Hashable {
 
     static var zero : Self { get }
     
+    var adjoint : Self { get }
+    
 }
 
 public typealias Vector<Element : MatrixElement> = [Element]

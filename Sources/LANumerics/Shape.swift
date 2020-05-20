@@ -1,18 +1,18 @@
 postfix operator ′ // unicode character "Prime": U+2032
 
 public postfix func ′<Element : MatrixElement>(vector : Vector<Element>) -> Matrix<Element> {
-    return Matrix(row: vector)
+    return Matrix(row: vector.map { x in x.adjoint })
 }
 
 public postfix func ′<Element : MatrixElement>(matrix : Matrix<Element>) -> Matrix<Element> {
-    return matrix.transposed()
+    return matrix.adjoint
 }
 
 public typealias BlockMatrix<Element : MatrixElement> = Matrix<Matrix<Element>>
 
 public extension Matrix {
     
-    mutating func transpose() {
+    mutating func transposeInPlace() {
         if _rows > 1 && _columns > 1 {
             var transposedElements = elements
             asPointer(elements) { elements in
@@ -31,12 +31,35 @@ public extension Matrix {
         swap(&_rows, &_columns)
     }
     
-    func transposed() -> Matrix {
+    var transpose : Matrix {
         var m = self
-        m.transpose()
+        m.transposeInPlace()
         return m
     }
         
+    mutating func adjointInPlace() {
+        var transposedElements = elements
+        asPointer(elements) { elements in
+            asMutablePointer(&transposedElements) { transposedElements in
+                for r in 0 ..< _rows {
+                    for c in 0 ..< _columns {
+                        let sourceIndex = c * _rows + r
+                        let targetIndex = r * _columns + c
+                        transposedElements[targetIndex] = elements[sourceIndex].adjoint
+                    }
+                }
+            }
+        }
+        elements = transposedElements
+        swap(&_rows, &_columns)
+    }
+    
+    var adjoint: Matrix {
+        var m = self
+        m.adjointInPlace()
+        return m
+    }
+
     func column(_ c : Int) -> Matrix {
         precondition(c >= 0 && c < _columns)
         let start = c * _rows

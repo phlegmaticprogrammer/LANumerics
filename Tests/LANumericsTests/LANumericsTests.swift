@@ -5,7 +5,7 @@ import simd
 
 final class LANumericsTests: XCTestCase {
 
-    public typealias LAFP = LANumeric & LANumericPrimitives 
+    public typealias LAFP = LANumeric & LANumericPrimitives & ExpressibleByFloatLiteral
     public typealias BLAFP = LAFP & BinaryFloatingPoint
 
     func countingMatrix<F : LAFP>(rows : Int, columns : Int) -> Matrix<F> {
@@ -40,7 +40,7 @@ final class LANumericsTests: XCTestCase {
 
     func testTranspose() {
         let u : Matrix<Float> = countingMatrix(rows : 4, columns : 3)
-        let v = u.transposed()
+        let v = u.transpose
         XCTAssertEqual(u.rows, 4)
         XCTAssertEqual(u.columns, 3)
         XCTAssertEqual(v.rows, 3)
@@ -50,7 +50,7 @@ final class LANumericsTests: XCTestCase {
                 XCTAssertEqual(u[r, c], v[c, r])
             }
         }
-        XCTAssertEqual(v.transposed(), u)
+        XCTAssertEqual(v.transpose, u)
         XCTAssertEqual(v, u′)
     }
 
@@ -154,6 +154,22 @@ final class LANumericsTests: XCTestCase {
         }
         return sum
     }
+    
+    func epsilon<E : LANumericPrimitives>(_ type : E.Type) -> E.Magnitude {
+        let e : E = 0.01
+        return e.magnitude
+    }
+    
+    func XCTSame<E : LAFP>(_ X : Matrix<E>, _ Y : Matrix<E>) {
+        let norm = (X - Y).infinityNorm
+        XCTAssert(norm < epsilon(E.self), "norm is \(norm), X = \(X), Y = \(Y)")
+    }
+
+    func XCTSame<E : LANumericPrimitives>(_ X : E, _ Y : E) {
+        let norm = (X - Y).magnitude
+        let e : E.Magnitude = epsilon(E.self)
+        XCTAssert(norm < e, "norm is \(norm), X = \(X), Y = \(Y)")
+    }
 
     func testScale() {
         func generic<E : LAFP>(_ type : E.Type) {
@@ -199,8 +215,8 @@ final class LANumericsTests: XCTestCase {
             let beta : E = randomWhole()
             let R = scale(alpha, mul(A, B)) + scale(beta, C)
             func test(transposeA : Bool, transposeB : Bool) {
-                let opA = transposeA ? A.transposed() : A
-                let opB = transposeB ? B.transposed() : B
+                let opA = transposeA ? A.transpose : A
+                let opB = transposeB ? B.transpose : B
                 var D = C
                 E.matrixProduct(alpha, transposeA, opA, transposeB, opB, beta, &D)
                 XCTAssertEqual(D, R)
@@ -230,7 +246,7 @@ final class LANumericsTests: XCTestCase {
             let beta : E = randomWhole()
             let R = scale(alpha, mul(A, B)) + scale(beta, C)
             func test(transpose : Bool) {
-                let opA = transpose ? A.transposed() : A
+                let opA = transpose ? A.transpose : A
                 let X = B.vector
                 var Y = C.vector
                 E.matrixVectorProduct(alpha, transpose, opA, X, beta, &Y)
@@ -473,11 +489,27 @@ final class LANumericsTests: XCTestCase {
             let blas_asum = E.blas_asum(Int32(v.count), v, 1)
             XCTAssertEqual(asum, blas_asum)
         }
-        generic(Float.self)
-        generic(Double.self)
-        generic(Complex<Float>.self)
-        generic(Complex<Double>.self)
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
     }
 
-    
+    func test_blas_nrm2() {
+        func generic<E : LANumericPrimitives>(_ type : E.Type) {
+            let v : Vector<E> = randomWholeVector()
+            let nrm2_squared = Matrix(v).fold(0) { x, y in x + y.lengthSquared }
+            let blas_nrm2 = E.blas_nrm2(Int32(v.count), v, 1)
+            XCTSame(E(magnitude: nrm2_squared), E(magnitude: blas_nrm2 * blas_nrm2))
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
+
 }
