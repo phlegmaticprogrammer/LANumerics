@@ -440,7 +440,7 @@ final class LANumericsTests: XCTestCase {
         generic(Double.self)
     }
     
-    /*func testLäuchliExample() {
+    func testLäuchliExample() {
         func generic<E : BLAFP>(eps : E) {
             let A = Matrix(rows: [[1, 1], [eps, 0], [0, eps]])
             let b = [2, eps, eps]
@@ -450,7 +450,7 @@ final class LANumericsTests: XCTestCase {
         }
         generic(eps: Double(1e-16))
         generic(eps: Float(1e-7))
-    }*/
+    }
     
     func testSingularValueDecomposition() {
         func generic<E : BLAFP>(_ type : E.Type) {
