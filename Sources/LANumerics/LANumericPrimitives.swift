@@ -131,7 +131,7 @@ extension Complex : LANumericPrimitives {
         
     public var manhattanLength : Magnitude { return real.magnitude + imaginary.magnitude }
 
-    public var adjoint : Complex { return self.conjugate }
+    public var adjoint : Complex { return conjugate }
 
     public init(magnitude: Self.Magnitude) {
         self = Complex(magnitude, 0)
