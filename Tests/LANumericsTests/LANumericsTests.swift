@@ -215,17 +215,22 @@ final class LANumericsTests: XCTestCase {
             let alpha : E = randomWhole()
             let beta : E = randomWhole()
             let R = scale(alpha, mul(A, B)) + scale(beta, C)
-            func test(transposeA : Bool, transposeB : Bool) {
-                let opA = transposeA ? A.transpose : A
-                let opB = transposeB ? B.transpose : B
+            func test(transposeA : Transpose, transposeB : Transpose) {
+                let opA = transposeA.apply(A)
+                let opB = transposeB.apply(B)
                 var D = C
                 E.matrixProduct(alpha, transposeA, opA, transposeB, opB, beta, &D)
                 XCTAssertEqual(D, R)
             }
-            test(transposeA: false, transposeB: false)
-            test(transposeA: false, transposeB: true)
-            test(transposeA: true, transposeB: false)
-            test(transposeA: true, transposeB: true)
+            test(transposeA: .none, transposeB: .none)
+            test(transposeA: .transpose, transposeB: .none)
+            test(transposeA: .adjoint, transposeB: .none)
+            test(transposeA: .none, transposeB: .transpose)
+            test(transposeA: .transpose, transposeB: .transpose)
+            test(transposeA: .adjoint, transposeB: .transpose)
+            test(transposeA: .none, transposeB: .adjoint)
+            test(transposeA: .transpose, transposeB: .adjoint)
+            test(transposeA: .adjoint, transposeB: .adjoint)
         }
         stress {
             generic(Float.self)
@@ -246,15 +251,16 @@ final class LANumericsTests: XCTestCase {
             let alpha : E = randomWhole()
             let beta : E = randomWhole()
             let R = scale(alpha, mul(A, B)) + scale(beta, C)
-            func test(transpose : Bool) {
-                let opA = transpose ? A.transpose : A
+            func test(transpose : Transpose) {
+                let opA = transpose.apply(A)
                 let X = B.vector
                 var Y = C.vector
                 E.matrixVectorProduct(alpha, transpose, opA, X, beta, &Y)
                 XCTAssertEqual(Y, R.vector)
             }
-            test(transpose: false)
-            test(transpose: true)
+            test(transpose: .none)
+            test(transpose: .transpose)
+            test(transpose: .adjoint)
         }
         stress {
             generic(Float.self)
@@ -434,7 +440,7 @@ final class LANumericsTests: XCTestCase {
         generic(Double.self)
     }
     
-    func testLäuchliExample() {
+    /*func testLäuchliExample() {
         func generic<E : BLAFP>(eps : E) {
             let A = Matrix(rows: [[1, 1], [eps, 0], [0, eps]])
             let b = [2, eps, eps]
@@ -444,7 +450,7 @@ final class LANumericsTests: XCTestCase {
         }
         generic(eps: Double(1e-16))
         generic(eps: Float(1e-7))
-    }
+    }*/
     
     func testSingularValueDecomposition() {
         func generic<E : BLAFP>(_ type : E.Type) {

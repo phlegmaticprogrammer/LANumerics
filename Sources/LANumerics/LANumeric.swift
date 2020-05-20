@@ -14,6 +14,37 @@ public enum SVDJob {
     }
 }
 
+public enum Transpose {
+    case none
+    case transpose
+    case adjoint
+    
+    func blas(complex: Bool) -> Int8 {
+        switch self {
+        case .none: return   0x4E /* "N" */
+        case .transpose: return 0x54 /* "T" */
+        case .adjoint where complex: return 0x43 /* "C" */
+        case .adjoint: return 0x54 /* "T" */
+        }
+    }
+    
+    var cblas : CBLAS_TRANSPOSE {
+        switch self {
+        case .none: return CblasNoTrans
+        case .transpose: return CblasTrans
+        case .adjoint: return CblasConjTrans
+        }
+    }
+    
+    public func apply<E>(_ matrix : Matrix<E>) -> Matrix<E> {
+        switch self {
+        case .none: return matrix
+        case .transpose: return matrix.transpose
+        case .adjoint: return matrix.adjoint
+        }
+    }
+}
+
 public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral where Magnitude : MatrixElement {
         
     init(magnitude : Self.Magnitude)
@@ -75,7 +106,7 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral wh
                             _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
                             _ info : UnsafeMutablePointer<Int32>) -> Int32
 
-    static func lapack_gels(_ trans : UnsafeMutablePointer<Int8>,
+    static func lapack_gels(_ trans : Transpose,
                             _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
                             _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
                             _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
@@ -139,12 +170,12 @@ public extension LANumeric {
         return blas_adjointDot(Int32(A.count), A, 1, B, 1)
     }
 
-    /// Scales the product of `A` and `B` by `alpha` and adds it to the result of scaling `C` by `beta`. Optionally `A` and / or `B` can be adjoint prior to that.
-    static func matrixProduct(_ alpha : Self, _ adjointA : Bool, _ A : Matrix<Self>, _ adjointB : Bool, _ B : Matrix<Self>, _ beta : Self, _ C : inout Matrix<Self>) {
-        let M = Int32(adjointA ? A.columns : A.rows)
-        let N = Int32(adjointB ? B.rows : B.columns)
-        let KA = Int32(adjointA ? A.rows : A.columns)
-        let KB = Int32(adjointB ? B.columns : B.rows)
+    /// Scales the product of `A` and `B` by `alpha` and adds it to the result of scaling `C` by `beta`. Optionally `A` and / or `B` can be transposed/adjoint prior to that.
+    static func matrixProduct(_ alpha : Self, _ transposeA : Transpose, _ A : Matrix<Self>, _ transposeB : Transpose, _ B : Matrix<Self>, _ beta : Self, _ C : inout Matrix<Self>) {
+        let M = Int32(transposeA != .none ? A.columns : A.rows)
+        let N = Int32(transposeB != .none ? B.rows : B.columns)
+        let KA = Int32(transposeA != .none ? A.rows : A.columns)
+        let KB = Int32(transposeB != .none ? B.columns : B.rows)
         precondition(KA == KB)
         precondition(M == C.rows)
         precondition(N == C.columns)
@@ -153,24 +184,24 @@ public extension LANumeric {
             return
         }
         asMutablePointer(&C.elements) { C in
-            let ta = adjointA ? CblasTrans : CblasNoTrans
-            let tb = adjointB ? CblasTrans : CblasNoTrans
+            let ta = transposeA.cblas
+            let tb = transposeB.cblas
             blas_gemm(CblasColMajor, ta, tb, M, N, KA, alpha, A.elements, Int32(A.rows), B.elements, Int32(B.rows), beta, C, M)
         }
     }
 
-    /// Scales the product of `A` and `X` by `alpha` and adds it to the result of scaling `Y` by `beta`. Optionally `A` can be adjoint prior to that.
-    static func matrixVectorProduct(_ alpha : Self, _ adjointA : Bool, _ A : Matrix<Self>, _ X : Vector<Self>, _ beta : Self, _ Y : inout Vector<Self>) {
+    /// Scales the product of `A` and `X` by `alpha` and adds it to the result of scaling `Y` by `beta`. Optionally `A` can be transposed/adjoint prior to that.
+    static func matrixVectorProduct(_ alpha : Self, _ transposeA : Transpose, _ A : Matrix<Self>, _ X : Vector<Self>, _ beta : Self, _ Y : inout Vector<Self>) {
         let M = Int32(A.rows)
         let N = Int32(A.columns)
-        precondition(adjointA ? (N == Y.count) : (N == X.count))
-        precondition(adjointA ? (M == X.count) : (M == Y.count))
+        precondition(transposeA != .none ? (N == Y.count) : (N == X.count))
+        precondition(transposeA != .none ? (M == X.count) : (M == Y.count))
         guard M > 0 else {
             scaleVector(beta, &Y)
             return
         }
         asMutablePointer(&Y) { Y in
-            let ta = adjointA ? CblasTrans : CblasNoTrans
+            let ta = transposeA.cblas
             blas_gemv(CblasColMajor, ta, M, N, alpha, A.elements, M, X, 1, beta, Y, 1)
         }
     }
@@ -220,14 +251,13 @@ public extension LANumeric {
         return info == 0
     }
     
-    /// Finds the minimum least squares solutions `x` of minimizing `(b - A * x).euclideanNorm` or `(b - A′ * x).euclideanNorm` and returns the result.
+    /// Finds the minimum least squares solutions `x` of minimizing `(b - A * x).length` or `(b - A′ * x).length` and returns the result.
     /// Each column `x` in the result corresponds to the solution for the corresponding column `b` in `B`.
-    static func solveLinearLeastSquares(_ A : Matrix<Self>, _ adjointA : Bool, _ B : Matrix<Self>) -> Matrix<Self>? {
-        var trans : Int8 = (adjointA ? 0x54 /* "T" */ : 0x4E /* "N" */)
+    static func solveLinearLeastSquares(_ A : Matrix<Self>, _ transposeA : Transpose, _ B : Matrix<Self>) -> Matrix<Self>? {
         var m : Int32 = Int32(A.rows)
         var n : Int32 = Int32(A.columns)
-        let X = adjointA ? A.rows : A.columns
-        precondition(adjointA ? B.rows == n : B.rows == m)
+        let X = transposeA != .none ? A.rows : A.columns
+        precondition(transposeA != .none ? B.rows == n : B.rows == m)
         var A = A
         A.extend(rows: 1)
         var B = B
@@ -240,11 +270,11 @@ public extension LANumeric {
         asMutablePointer(&A.elements) { A in
             asMutablePointer(&B.elements) { B in
                 var workCount : Self = 0
-                let _ = lapack_gels(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, &workCount, &lwork, &info)
+                let _ = lapack_gels(transposeA, &m, &n, &nrhs, A, &lda, B, &ldb, &workCount, &lwork, &info)
                 guard info == 0 else { return }
                 var work = [Self](repeating: 0, count: workCount.toInt)
                 lwork = Int32(work.count)
-                let _ = lapack_gels(&trans, &m, &n, &nrhs, A, &lda, B, &ldb, &work, &lwork, &info)
+                let _ = lapack_gels(transposeA, &m, &n, &nrhs, A, &lda, B, &ldb, &work, &lwork, &info)
             }
         }
         guard info == 0 else { return nil }
@@ -375,37 +405,37 @@ public extension Matrix where Element : LANumeric {
             
     static func * (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.rows, columns: right.columns)
-        Element.matrixProduct(1, false, left, false, right, 0, &C)
+        Element.matrixProduct(1, .none, left, .none, right, 0, &C)
         return C
     }
     
     static func ′* (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.columns, columns: right.columns)
-        Element.matrixProduct(1, true, left, false, right, 0, &C)
+        Element.matrixProduct(1, .adjoint, left, .none, right, 0, &C)
         return C
     }
 
     static func *′ (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.rows, columns: right.rows)
-        Element.matrixProduct(1, false, left, true, right, 0, &C)
+        Element.matrixProduct(1, .none, left, .adjoint, right, 0, &C)
         return C
     }
 
     static func ′*′ (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.columns, columns: right.rows)
-        Element.matrixProduct(1, true, left, true, right, 0, &C)
+        Element.matrixProduct(1, .adjoint, left, .adjoint, right, 0, &C)
         return C
     }
 
     static func * (left : Matrix, right : Vector<Element>) -> Vector<Element> {
         var Y = [Element](repeating: Element.zero, count: left.rows)
-        Element.matrixVectorProduct(1, false, left, right, 0, &Y)
+        Element.matrixVectorProduct(1, .none, left, right, 0, &Y)
         return Y
     }
     
     static func ′* (left : Matrix, right : Vector<Element>) -> Vector<Element> {
         var Y = [Element](repeating: Element.zero, count: left.columns)
-        Element.matrixVectorProduct(1, true, left, right, 0, &Y)
+        Element.matrixVectorProduct(1, .adjoint, left, right, 0, &Y)
         return Y
     }
 
@@ -432,12 +462,12 @@ public extension Matrix where Element : LANumeric {
         return solve(Matrix(rhs))?.vector
     }
     
-    func solveLeastSquares(adjoint : Bool = false, _ rhs : Matrix) -> Matrix? {
-        return Element.solveLinearLeastSquares(self, adjoint, rhs)
+    func solveLeastSquares(transpose : Transpose = .none, _ rhs : Matrix) -> Matrix? {
+        return Element.solveLinearLeastSquares(self, transpose, rhs)
     }
     
-    func solveLeastSquares(adjoint : Bool = false, _ rhs : Vector<Element>) -> Vector<Element>? {
-        return Element.solveLinearLeastSquares(self, adjoint, Matrix(rhs))?.vector
+    func solveLeastSquares(transpose : Transpose = .none, _ rhs : Vector<Element>) -> Vector<Element>? {
+        return Element.solveLinearLeastSquares(self, transpose, Matrix(rhs))?.vector
     }
     
     func svd(left : SVDJob = .all, right : SVDJob = .all) -> (singularValues : Vector<Element.Magnitude>, left : Matrix, right : Matrix) {
@@ -453,11 +483,11 @@ public extension Matrix where Element : LANumeric {
     }
 
     static func ′∖ (lhs : Matrix, rhs : Matrix) -> Matrix {
-        return lhs.solveLeastSquares(adjoint: true, rhs)!
+        return lhs.solveLeastSquares(transpose: .adjoint, rhs)!
     }
     
     static func ′∖ (lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
-        return lhs.solveLeastSquares(adjoint: true, rhs)!
+        return lhs.solveLeastSquares(transpose: .adjoint, rhs)!
     }
 }
 
@@ -476,8 +506,4 @@ public func *′ <Element : LANumeric>(left : Vector<Element>, right : Vector<El
     Element.vectorVectorProduct(1, left, right, &A)
     return A
 }
-
-
-
-
 

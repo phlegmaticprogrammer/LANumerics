@@ -91,14 +91,15 @@ extension Float : LANumeric {
         sgesv_(n, nrhs, a, lda, ipiv, b, ldb, info)
     }
     
-    public static func lapack_gels(_ trans : UnsafeMutablePointer<Int8>,
+    public static func lapack_gels(_ trans : Transpose,
                                    _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
                                    _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                                    _ info : UnsafeMutablePointer<Int32>) -> Int32
     {
-        sgels_(trans, m, n, nrhs, a, lda, b, ldb, work, lwork, info)
+        var trans : Int8 = trans.blas(complex: false)
+        return sgels_(&trans, m, n, nrhs, a, lda, b, ldb, work, lwork, info)
     }
 
     public static func lapack_gesvd(_ jobu : UnsafeMutablePointer<Int8>, _ jobvt : UnsafeMutablePointer<Int8>,

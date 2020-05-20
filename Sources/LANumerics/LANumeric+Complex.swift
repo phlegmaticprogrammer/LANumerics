@@ -219,16 +219,17 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : Matrix
         )
     }
 
-    public static func lapack_gels(_ trans : UnsafeMutablePointer<Int8>,
+    public static func lapack_gels(_ trans : Transpose,
                                    _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
                                    _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                                    _ info : UnsafeMutablePointer<Int32>) -> Int32
     {
-        dispatch(
-            float: { cgels_(trans, m, n, nrhs, recast(a), lda, recast(b), ldb, recast(work), lwork, info) },
-            double: { zgels_(trans, m, n, nrhs, recast(a), lda, recast(b), ldb, recast(work), lwork, info) }
+        var trans = trans.blas(complex: true)
+        return dispatch(
+            float: { cgels_(&trans, m, n, nrhs, recast(a), lda, recast(b), ldb, recast(work), lwork, info) },
+            double: { zgels_(&trans, m, n, nrhs, recast(a), lda, recast(b), ldb, recast(work), lwork, info) }
         )
     }
 
