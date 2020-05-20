@@ -14,6 +14,80 @@ public enum SVDJob {
     }
 }
 
+public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral {
+        
+    init(magnitude : Self.Magnitude)
+
+    var manhattanLength : Self.Magnitude { get }
+    
+    var length : Self.Magnitude { get }
+    
+    var lengthSquared : Self.Magnitude { get }
+    
+    var toInt : Int { get }
+        
+    static func random(in : ClosedRange<Self.Magnitude>) -> Self
+
+    static func randomWhole(in : ClosedRange<Int>) -> Self
+    
+    static func blas_asum(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32) -> Self.Magnitude
+    
+    static func blas_nrm2(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32) -> Self.Magnitude
+    
+    static func blas_scal(_ N : Int32, _ alpha : Self, _ X : UnsafeMutablePointer<Self>, _ incX : Int32)
+    
+    static func blas_axpby(_ N : Int32,
+                           _ alpha : Self, _ X : UnsafePointer<Self>, _ incX : Int32,
+                           _ beta : Self, _ Y : UnsafeMutablePointer<Self>, _ incY : Int32)
+    
+    static func blas_iamax(_ N : Int32,
+                           _ X : UnsafePointer<Self>, _ incX : Int32) -> Int32
+    
+    static func blas_dot(_ N : Int32,
+                         _ X : UnsafePointer<Self>, _ incX : Int32,
+                         _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self
+    
+    static func blas_adjointDot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self.Magnitude
+    
+    static func blas_gemm(_ Order : CBLAS_ORDER, _ TransA : CBLAS_TRANSPOSE, _ TransB : CBLAS_TRANSPOSE,
+                          _ M : Int32, _ N : Int32, _ K : Int32,
+                          _ alpha : Self, _ A : UnsafePointer<Self>, _ lda : Int32, _ B : UnsafePointer<Self>, _ ldb : Int32,
+                          _ beta : Self, _ C : UnsafeMutablePointer<Self>, _ ldc : Int32)
+
+    static func blas_gemv(_ Order : CBLAS_ORDER, _ TransA : CBLAS_TRANSPOSE, _ M : Int32, _ N : Int32,
+                          _ alpha : Self, _ A : UnsafePointer<Self>, _ lda : Int32,
+                          _ X : UnsafePointer<Self>, _ incX : Int32,
+                          _ beta : Self, _ Y : UnsafeMutablePointer<Self>, _ incY : Int32)
+    
+    static func blas_ger(_ Order : CBLAS_ORDER, _ M : Int32, _ N : Int32,
+                         _ alpha : Self, _ X : UnsafePointer<Self>, _ incX : Int32,
+                         _ Y : UnsafePointer<Self>, _ incY : Int32,
+                         _ A : UnsafeMutablePointer<Self>, _ lda : Int32)
+    
+    static func lapack_gesv(_ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
+                            _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                            _ ipiv : UnsafeMutablePointer<Int32>,
+                            _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
+                            _ info : UnsafeMutablePointer<Int32>) -> Int32
+
+    static func lapack_gels(_ trans : UnsafeMutablePointer<Int8>,
+                            _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
+                            _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                            _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
+                            _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
+                            _ info : UnsafeMutablePointer<Int32>) -> Int32
+    
+    static func lapack_gesvd(_ jobu : UnsafeMutablePointer<Int8>, _ jobvt : UnsafeMutablePointer<Int8>,
+                             _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>,
+                             _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                             _ s : UnsafeMutablePointer<Self>,
+                             _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<Int32>,
+                             _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<Int32>,
+                             _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
+                             _ info : UnsafeMutablePointer<Int32>) -> Int32
+
+}
+
 public extension LANumeric {
 
     /// Computes the sum of the manhattanLengths of all elements in `vector`.
