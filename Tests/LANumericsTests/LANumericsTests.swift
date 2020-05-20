@@ -5,9 +5,9 @@ import simd
 
 final class LANumericsTests: XCTestCase {
 
-    public typealias LAFP = LANumeric & LANumericPrimitives & ExpressibleByFloatLiteral
+    public typealias LAFP = LANumeric & ExpressibleByFloatLiteral
     public typealias BLAFP = LAFP & BinaryFloatingPoint
-    public typealias Num = LANumericPrimitives
+    public typealias Num = LANumeric
 
     func countingMatrix<F : LAFP>(rows : Int, columns : Int) -> Matrix<F> {
         return Matrix<F>(rows: rows, columns: columns) { r, c in
@@ -15,17 +15,17 @@ final class LANumericsTests: XCTestCase {
         }
     }
     
-    func randomWhole<F : LANumericPrimitives>() -> F {
+    func randomWhole<F : Num>() -> F {
         F.randomWhole(in: -100 ... 100)
     }
     
-    func randomWholeMatrix<F : LANumericPrimitives>(rows : Int = Int.random(in: 0 ... 10), columns : Int = Int.random(in: 0 ... 10)) -> Matrix<F> {
+    func randomWholeMatrix<F : Num>(rows : Int = Int.random(in: 0 ... 10), columns : Int = Int.random(in: 0 ... 10)) -> Matrix<F> {
         return Matrix<F>(rows: rows, columns: columns) { _ , _ in
             randomWhole()
         }
     }
     
-    func randomWholeVector<F : LANumericPrimitives>(count : Int = Int.random(in: 0 ... 10)) -> Vector<F> {
+    func randomWholeVector<F : Num>(count : Int = Int.random(in: 0 ... 10)) -> Vector<F> {
         var X : Vector<F> = []
         for _ in 0 ..< count {
             X.append(randomWhole())
@@ -71,7 +71,7 @@ final class LANumericsTests: XCTestCase {
     func testEuclideanNorm() {
         func generic<E : BLAFP>(_ type : E.Type) {
             let u : Matrix<E> = randomWholeMatrix()
-            let l2 = u.euclideanNorm
+            let l2 = u.norm
             let sum = u.fold { x, y in x + y*y }
             XCTAssertEqual((l2 * l2).rounded(), sum)
         }
@@ -161,7 +161,7 @@ final class LANumericsTests: XCTestCase {
         return e.magnitude
     }
     
-    func XCTSame<E : LANumeric & Num>(_ X : Matrix<E>, _ Y : Matrix<E>) {
+    func XCTSame<E : Num>(_ X : Matrix<E>, _ Y : Matrix<E>) {
         let norm = (X - Y).infinityNorm
         XCTAssert(norm < epsilon(E.self), "norm is \(norm), X = \(X), Y = \(Y)")
     }
@@ -194,7 +194,7 @@ final class LANumericsTests: XCTestCase {
             let X : Vector<E> = randomWholeVector()
             let Y : Vector<E> = randomWholeVector(count: X.count)
             XCTAssertEqual(E.dotProduct(X, Y), dot(X, Y))
-            XCTAssertEqual(X ′* Y, dot(X, Y))
+            XCTAssertEqual(E(magnitude: X ′* Y), dot(X, Y))
         }
         stress { generic(Float.self) }
         stress { generic(Double.self) }

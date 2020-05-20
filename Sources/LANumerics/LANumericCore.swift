@@ -2,7 +2,7 @@ import Foundation
 import Numerics
 import Accelerate
 
-public protocol LANumericPrimitives : MatrixElement, Numeric, ExpressibleByFloatLiteral {
+public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral {
         
     init(magnitude : Self.Magnitude)
 
@@ -76,7 +76,7 @@ public protocol LANumericPrimitives : MatrixElement, Numeric, ExpressibleByFloat
 
 }
 
-extension Float : LANumericPrimitives {
+extension Float : LANumeric {
     
     public var manhattanLength : Float { return magnitude }
     
@@ -183,7 +183,7 @@ extension Float : LANumericPrimitives {
 
 }
 
-extension Double : LANumericPrimitives {
+extension Double : LANumeric {
         
     public var manhattanLength : Double { return magnitude }
 
@@ -290,7 +290,7 @@ extension Double : LANumericPrimitives {
 
 }
 
-extension Complex : LANumericPrimitives, ExpressibleByFloatLiteral {
+extension Complex : LANumeric, ExpressibleByFloatLiteral {
         
     public typealias FloatLiteralType = Double
     
