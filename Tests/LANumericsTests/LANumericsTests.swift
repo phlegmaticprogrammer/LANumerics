@@ -453,14 +453,14 @@ final class LANumericsTests: XCTestCase {
     }
     
     func testSingularValueDecomposition() {
-        func generic<E : BLAFP>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             func same(_ X : Matrix<E>, _ Y : Matrix<E>) {
                 let norm = (X - Y).infinityNorm
-                XCTAssert(norm < 0.001, "norm is \(norm), X = \(X), Y = \(Y)")
+                XCTAssert(norm < epsilon(E.self), "norm is \(norm), X = \(X), Y = \(Y)")
             }
             func isSame(_ X : Matrix<E>, _ Y : Matrix<E>) -> Bool {
                 let norm = (X - Y).infinityNorm
-                return norm < 0.001
+                return norm < epsilon(E.self)
             }
             let A : Matrix<E> = randomWholeMatrix()
             let m = A.rows
@@ -472,20 +472,25 @@ final class LANumericsTests: XCTestCase {
             XCTAssert(svd.right.hasDimensions(n, n))
             same(svd.left ′* svd.left, .eye(m))
             same(svd.right ′* svd.right, .eye(n))
-            let D = Matrix<E>(rows: A.rows, columns: A.columns, diagonal: svd.singularValues)
+            func map(_ v : Vector<E.Magnitude>) -> Vector<E> {
+                v.map { x in E(magnitude: x) }
+            }
+            let D = Matrix<E>(rows: A.rows, columns: A.columns, diagonal: map(svd.singularValues))
             same(svd.left * D * svd.right, A)
             let svdS = A.svd(left: .singular, right: .singular)
-            same(Matrix(svd.singularValues), Matrix(svdS.singularValues))
+            same(Matrix(map(svd.singularValues)), Matrix(map(svdS.singularValues)))
             same(svd.left[0 ..< m, 0 ..< k], svdS.left)
             same(svd.right[0 ..< k, 0 ..< n], svdS.right)
             let svdN = A.svd(left: .none, right: .none)
-            same(Matrix(svd.singularValues), Matrix(svdN.singularValues))
+            same(Matrix(map(svd.singularValues)), Matrix(map(svdN.singularValues)))
             same(svd.left[0 ..< m, 0 ..< 0], svdN.left)
             same(svd.right[0 ..< 0, 0 ..< n], svdN.right)
         }
         stress {
             generic(Float.self)
             generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
         }
     }
     
