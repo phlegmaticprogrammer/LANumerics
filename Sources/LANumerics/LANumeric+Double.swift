@@ -74,6 +74,15 @@ extension Double : LANumeric {
         cblas_dger(Order, M, N, alpha, X, incX, Y, incY, A, lda)
     }
 
+    public static func blas_gerAdjoint(_ Order : CBLAS_ORDER, _ M : Int32, _ N : Int32,
+                                       _ alpha : Self, _ X : UnsafePointer<Self>, _ incX : Int32,
+                                       _ Y : UnsafePointer<Self>, _ incY : Int32,
+                                       _ A : UnsafeMutablePointer<Self>, _ lda : Int32)
+    {
+        cblas_dger(Order, M, N, alpha, X, incX, Y, incY, A, lda)
+    }
+
+    
     public static func lapack_gesv(_ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
                                    _ ipiv : UnsafeMutablePointer<Int32>,
@@ -96,7 +105,7 @@ extension Double : LANumeric {
     public static func lapack_gesvd(_ jobu : UnsafeMutablePointer<Int8>, _ jobvt : UnsafeMutablePointer<Int8>,
                                     _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>,
                                     _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
-                                    _ s : UnsafeMutablePointer<Self>,
+                                    _ s : UnsafeMutablePointer<Self.Magnitude>,
                                     _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<Int32>,
                                     _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<Int32>,
                                     _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,

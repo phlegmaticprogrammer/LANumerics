@@ -14,7 +14,7 @@ public enum SVDJob {
     }
 }
 
-public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral {
+public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral where Magnitude : MatrixElement {
         
     init(magnitude : Self.Magnitude)
 
@@ -63,6 +63,11 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral {
                          _ alpha : Self, _ X : UnsafePointer<Self>, _ incX : Int32,
                          _ Y : UnsafePointer<Self>, _ incY : Int32,
                          _ A : UnsafeMutablePointer<Self>, _ lda : Int32)
+
+    static func blas_gerAdjoint(_ Order : CBLAS_ORDER, _ M : Int32, _ N : Int32,
+                                _ alpha : Self, _ X : UnsafePointer<Self>, _ incX : Int32,
+                                _ Y : UnsafePointer<Self>, _ incY : Int32,
+                                _ A : UnsafeMutablePointer<Self>, _ lda : Int32)
     
     static func lapack_gesv(_ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
                             _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
@@ -80,7 +85,7 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral {
     static func lapack_gesvd(_ jobu : UnsafeMutablePointer<Int8>, _ jobvt : UnsafeMutablePointer<Int8>,
                              _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>,
                              _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
-                             _ s : UnsafeMutablePointer<Self>,
+                             _ s : UnsafeMutablePointer<Self.Magnitude>,
                              _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<Int32>,
                              _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<Int32>,
                              _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
@@ -170,7 +175,7 @@ public extension LANumeric {
         }
     }
 
-    /// Scales the product of `X` and  the adjoint of `Y` by `alpha` and adds it to `A`.
+    /// Scales the product of `X` and  the transpose of `Y` by `alpha` and adds it to `A`.
     static func vectorVectorProduct(_ alpha : Self, _ X : Vector<Self>, _ Y : Vector<Self>, _ A : inout Matrix<Self>) {
         let M = Int32(A.rows)
         let N = Int32(A.columns)
@@ -182,6 +187,18 @@ public extension LANumeric {
         }
     }
 
+    /// Scales the product of `X` and  the adjoint of `Y` by `alpha` and adds it to `A`.
+    static func vectorAdjointVectorProduct(_ alpha : Self, _ X : Vector<Self>, _ Y : Vector<Self>, _ A : inout Matrix<Self>) {
+        let M = Int32(A.rows)
+        let N = Int32(A.columns)
+        precondition(M == X.count)
+        precondition(N == Y.count)
+        guard M > 0 && N > 0 else { return }
+        asMutablePointer(&A.elements) { A in
+            blas_gerAdjoint(CblasColMajor, M, N, alpha, X, 1, Y, 1, A, M)
+        }
+    }
+    
     /// Solves the system of linear equations `A * X = B` and stores the result `X` in `B`.
     /// - returns: `true` if the operation completed successfully, `false` otherwise.
     static func solveLinearEquations(_ A : Matrix<Self>, _ B : inout Matrix<Self>) -> Bool {
@@ -238,7 +255,7 @@ public extension LANumeric {
     /// Here `D == Matrix(rows: m, columns: n, diagonal: singularValues)` and `singularValues` has `min(m, n)` elements.
     /// The result matrix `left` has `m` rows, and depending on its job parameter either `m` (`all`), `min(m, n)` (`singular`) or `0` (`none`) columns.
     /// The result matrix `right` has `n` columns, and depending on its job parameter either `n` (`all`), `min(m, n)` (`singular`) or `0` (`none`) rows.
-    static func singularValueDecomposition(_ A : Matrix<Self>, left : SVDJob, right : SVDJob) -> (singularValues : Vector<Self>, left : Matrix<Self>, right : Matrix<Self>)? {
+    static func singularValueDecomposition(_ A : Matrix<Self>, left : SVDJob, right : SVDJob) -> (singularValues : Vector<Self.Magnitude>, left : Matrix<Self>, right : Matrix<Self>)? {
         var m = Int32(A.rows)
         var n = Int32(A.columns)
         let k = min(m, n)
@@ -261,7 +278,7 @@ public extension LANumeric {
         }
         var A = A
         var lda = m
-        var S = Vector<Self>(repeating: 0, count: Int(k))
+        var S = Vector<Self.Magnitude>(repeating: 0, count: Int(k))
         var ldu = m
         var U = Matrix<Self>(rows: Int(ldu), columns: Int(leftColumns))
         var ldvt = max(1, rightRows)
@@ -423,7 +440,7 @@ public extension Matrix where Element : LANumeric {
         return Element.solveLinearLeastSquares(self, adjoint, Matrix(rhs))?.vector
     }
     
-    func svd(left : SVDJob = .all, right : SVDJob = .all) -> (singularValues : Vector<Element>, left : Matrix, right : Matrix) {
+    func svd(left : SVDJob = .all, right : SVDJob = .all) -> (singularValues : Vector<Element.Magnitude>, left : Matrix, right : Matrix) {
         return Element.singularValueDecomposition(self, left: left, right: right)!
     }
     
