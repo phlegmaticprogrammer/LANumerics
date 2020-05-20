@@ -196,7 +196,7 @@ public extension LANumeric {
         let N = Int32(A.columns)
         precondition(transposeA != .none ? (N == Y.count) : (N == X.count))
         precondition(transposeA != .none ? (M == X.count) : (M == Y.count))
-        guard M > 0 else {
+        guard M > 0 && N > 0 else {
             scaleVector(beta, &Y)
             return
         }

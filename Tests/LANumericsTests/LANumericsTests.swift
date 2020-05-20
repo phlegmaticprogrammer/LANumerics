@@ -239,7 +239,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testMatrixVectorProduct() {
-        func generic<E : LAFP>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             let M = Int.random(in: 0 ... 10)
             let N = 1
             let K = Int.random(in: 0 ... 10)
@@ -265,6 +265,8 @@ final class LANumericsTests: XCTestCase {
         stress {
             generic(Float.self)
             generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
         }
     }
 
