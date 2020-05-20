@@ -4,28 +4,30 @@ import simd
 
 final class LANumericsTests: XCTestCase {
 
-    public typealias LAFP = LANumeric & BinaryFloatingPoint
-    
+
+    public typealias LAFP = LANumeric & LANumericPrimitives & BinaryFloatingPoint
+    public typealias BLAFP = LAFP & BinaryFloatingPoint
+
     func countingMatrix<F : BinaryFloatingPoint>(rows : Int, columns : Int) -> Matrix<F> {
         return Matrix<F>(rows: rows, columns: columns) { r, c in
             return F(c * rows + r + 1)
         }
     }
     
-    func random<F : BinaryFloatingPoint>() -> F {
+    func randomWhole<F : BinaryFloatingPoint>() -> F {
         F(Int.random(in: -100 ... 100))
     }
     
-    func randomMatrix<F : BinaryFloatingPoint>(rows : Int = Int.random(in: 0 ... 10), columns : Int = Int.random(in: 0 ... 10)) -> Matrix<F> {
+    func randomWholeMatrix<F : BinaryFloatingPoint>(rows : Int = Int.random(in: 0 ... 10), columns : Int = Int.random(in: 0 ... 10)) -> Matrix<F> {
         return Matrix<F>(rows: rows, columns: columns) { _ , _ in
-            random()
+            randomWhole()
         }
     }
     
-    func randomVector<F : BinaryFloatingPoint>(count : Int = Int.random(in: 0 ... 10)) -> Vector<F> {
+    func randomWholeVector<F : BinaryFloatingPoint>(count : Int = Int.random(in: 0 ... 10)) -> Vector<F> {
         var X : Vector<F> = []
         for _ in 0 ..< count {
-            X.append(random())
+            X.append(randomWhole())
         }
         return X
     }
@@ -58,7 +60,7 @@ final class LANumericsTests: XCTestCase {
             let u : Matrix<E> = countingMatrix(rows : 4, columns : 3)
             XCTAssertEqual(u.manhattanNorm, E(add(u.rows * u.columns)))
             XCTAssertEqual(u.manhattanNorm, u.fold { x, y in x + abs(y) })
-            let w : Matrix<E> = randomMatrix()
+            let w : Matrix<E> = randomWholeMatrix()
             XCTAssertEqual(w.manhattanNorm, w.fold { x, y in x + abs(y) })
         }
         stress { generic(Float.self) }
@@ -67,7 +69,7 @@ final class LANumericsTests: XCTestCase {
 
     func testEuclideanNorm() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let u : Matrix<E> = randomMatrix()
+            let u : Matrix<E> = randomWholeMatrix()
             let l2 = u.euclideanNorm
             let sum = u.fold { x, y in x + y*y }
             XCTAssertEqual((l2 * l2).rounded(), sum)
@@ -78,7 +80,7 @@ final class LANumericsTests: XCTestCase {
 
     func testInfinityNorm() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let u : Matrix<E> = randomMatrix()
+            let u : Matrix<E> = randomWholeMatrix()
             let norm = u.infinityNorm
             let result = u.fold { x, y in max(x, abs(y)) }
             XCTAssertEqual(norm, result)
@@ -91,10 +93,10 @@ final class LANumericsTests: XCTestCase {
         func generic<E : LAFP>(_ type : E.Type) {
             let m = Int.random(in: 0 ... 10)
             let n = Int.random(in: 0 ... 10)
-            let u : Matrix<E> = randomMatrix(rows: m, columns: n)
-            let v : Matrix<E> = randomMatrix(rows: m, columns: n)
-            let alpha : E = random()
-            let beta : E = random()
+            let u : Matrix<E> = randomWholeMatrix(rows: m, columns: n)
+            let v : Matrix<E> = randomWholeMatrix(rows: m, columns: n)
+            let alpha : E = randomWhole()
+            let beta : E = randomWhole()
             var result = u
             result.accumulate(alpha, beta, v)
             let spec = u.combine(v) { x, y in alpha * x + beta * y}
@@ -110,7 +112,7 @@ final class LANumericsTests: XCTestCase {
     
     func testIndexOfLargestElement() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let u : Matrix<E> = randomMatrix()
+            let u : Matrix<E> = randomWholeMatrix()
             let largest = abs(u.largest)
             XCTAssert(u.forall { x in largest >= abs(x) }, "largest = \(largest) in \(u)")
         }
@@ -155,15 +157,15 @@ final class LANumericsTests: XCTestCase {
 
     func testScale() {
         func generic<E : LAFP>(_ type : E.Type) {
-            var X : Vector<E> = randomVector()
-            let alpha : E = random()
+            var X : Vector<E> = randomWholeVector()
+            let alpha : E = randomWhole()
             let Y = scale(alpha, X)
             E.scaleVector(alpha, &X)
             XCTAssertEqual(X, Y)
             X = []
             E.scaleVector(alpha, &X)
             XCTAssertEqual(X, [])
-            let A : Matrix<E> = randomMatrix()
+            let A : Matrix<E> = randomWholeMatrix()
             XCTAssertEqual(alpha * A, scale(alpha, A))
         }
         stress { generic(Float.self) }
@@ -172,8 +174,8 @@ final class LANumericsTests: XCTestCase {
     
     func testDotProduct() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let X : Vector<E> = randomVector()
-            let Y : Vector<E> = randomVector(count: X.count)
+            let X : Vector<E> = randomWholeVector()
+            let Y : Vector<E> = randomWholeVector(count: X.count)
             XCTAssertEqual(E.dotProduct(X, Y), dot(X, Y))
             XCTAssertEqual(X ′* Y, dot(X, Y))
         }
@@ -186,15 +188,15 @@ final class LANumericsTests: XCTestCase {
             let M = Int.random(in: 0 ... 10)
             let N = Int.random(in: 0 ... 10)
             let K = Int.random(in: 0 ... 10)
-            let A : Matrix<E> = randomMatrix(rows: M, columns: K)
-            let B : Matrix<E> = randomMatrix(rows: K, columns: N)
+            let A : Matrix<E> = randomWholeMatrix(rows: M, columns: K)
+            let B : Matrix<E> = randomWholeMatrix(rows: K, columns: N)
             XCTAssertEqual(A * B, mul(A, B))
             XCTAssertEqual(A′ ′* B, mul(A, B))
             XCTAssertEqual(A *′ B′, mul(A, B))
             XCTAssertEqual(A′ ′*′ B′, mul(A, B))
-            let C : Matrix<E> = randomMatrix(rows: M, columns: N)
-            let alpha : E = random()
-            let beta : E = random()
+            let C : Matrix<E> = randomWholeMatrix(rows: M, columns: N)
+            let alpha : E = randomWhole()
+            let beta : E = randomWhole()
             let R = scale(alpha, mul(A, B)) + scale(beta, C)
             func test(transposeA : Bool, transposeB : Bool) {
                 let opA = transposeA ? A.transposed() : A
@@ -219,13 +221,13 @@ final class LANumericsTests: XCTestCase {
             let M = Int.random(in: 0 ... 10)
             let N = 1
             let K = Int.random(in: 0 ... 10)
-            let A : Matrix<E> = randomMatrix(rows: M, columns: K)
-            let B : Matrix<E> = randomMatrix(rows: K, columns: N)
+            let A : Matrix<E> = randomWholeMatrix(rows: M, columns: K)
+            let B : Matrix<E> = randomWholeMatrix(rows: K, columns: N)
             XCTAssertEqual(A * B.vector, mul(A, B).vector)
             XCTAssertEqual(A′ ′* B.vector, mul(A, B).vector)
-            let C : Matrix<E> = randomMatrix(rows: M, columns: N)
-            let alpha : E = random()
-            let beta : E = random()
+            let C : Matrix<E> = randomWholeMatrix(rows: M, columns: N)
+            let alpha : E = randomWhole()
+            let beta : E = randomWhole()
             let R = scale(alpha, mul(A, B)) + scale(beta, C)
             func test(transpose : Bool) {
                 let opA = transpose ? A.transposed() : A
@@ -245,11 +247,11 @@ final class LANumericsTests: XCTestCase {
 
     func testVectorVectorProduct() {
         func generic<E : LAFP>(_ type : E.Type) {
-            let X : Matrix<E> = randomMatrix(rows: Int.random(in: 0 ... 10), columns: 1)
-            let Y : Matrix<E> = randomMatrix(rows: 1, columns: Int.random(in: 0 ... 10))
+            let X : Matrix<E> = randomWholeMatrix(rows: Int.random(in: 0 ... 10), columns: 1)
+            let Y : Matrix<E> = randomWholeMatrix(rows: 1, columns: Int.random(in: 0 ... 10))
             XCTAssertEqual(X.vector *′ Y.vector, mul(X, Y))
-            var A : Matrix<E> = randomMatrix(rows: X.rows, columns: Y.columns)
-            let alpha : E = random()
+            var A : Matrix<E> = randomWholeMatrix(rows: X.rows, columns: Y.columns)
+            let alpha : E = randomWhole()
             let R = scale(alpha, mul(X, Y)) + A
             E.vectorVectorProduct(alpha, X.vector, Y.vector, &A)
             XCTAssertEqual(A, R)
@@ -263,7 +265,7 @@ final class LANumericsTests: XCTestCase {
     func testSIMDVectors() {
         func generic<E : LAFP & SIMDScalar>(_ type : E.Type) {
             func test(_ count : Int, transform : (Matrix<E>) -> Matrix<E>) {
-                let m : Matrix<E> = randomMatrix(rows: count, columns: 1)
+                let m : Matrix<E> = randomWholeMatrix(rows: count, columns: 1)
                 XCTAssertEqual(m, transform(m))
             }
             test(2) { m in Matrix(m.simd2) }
@@ -291,36 +293,36 @@ final class LANumericsTests: XCTestCase {
         typealias E = Float
         
         stress {
-            let v2 : Matrix<E> = randomMatrix(rows: 2, columns: 1)
-            let m2x2 : Matrix<E> = randomMatrix(rows: 2, columns: 2)
+            let v2 : Matrix<E> = randomWholeMatrix(rows: 2, columns: 1)
+            let m2x2 : Matrix<E> = randomWholeMatrix(rows: 2, columns: 2)
             XCTAssertEqual(m2x2, Matrix(m2x2.simd2x2))
             XCTAssertEqual((m2x2 * v2).simd2, m2x2.simd2x2 * v2.simd2)
-            let m3x2 : Matrix<E> = randomMatrix(rows: 3, columns: 2)
+            let m3x2 : Matrix<E> = randomWholeMatrix(rows: 3, columns: 2)
             XCTAssertEqual(m3x2, Matrix(m3x2.simd2x3))
             XCTAssertEqual((m3x2 * v2).simd3, m3x2.simd2x3 * v2.simd2)
-            let m4x2 : Matrix<E> = randomMatrix(rows: 4, columns: 2)
+            let m4x2 : Matrix<E> = randomWholeMatrix(rows: 4, columns: 2)
             XCTAssertEqual(m4x2, Matrix(m4x2.simd2x4))
             XCTAssertEqual((m4x2 * v2).simd4, m4x2.simd2x4 * v2.simd2)
 
-            let v3 : Matrix<E> = randomMatrix(rows: 3, columns: 1)
-            let m2x3 : Matrix<E> = randomMatrix(rows: 2, columns: 3)
+            let v3 : Matrix<E> = randomWholeMatrix(rows: 3, columns: 1)
+            let m2x3 : Matrix<E> = randomWholeMatrix(rows: 2, columns: 3)
             XCTAssertEqual(m2x3, Matrix(m2x3.simd3x2))
             XCTAssertEqual((m2x3 * v3).simd2, m2x3.simd3x2 * v3.simd3)
-            let m3x3 : Matrix<E> = randomMatrix(rows: 3, columns: 3)
+            let m3x3 : Matrix<E> = randomWholeMatrix(rows: 3, columns: 3)
             XCTAssertEqual(m3x3, Matrix(m3x3.simd3x3))
             XCTAssertEqual((m3x3 * v3).simd3, m3x3.simd3x3 * v3.simd3)
-            let m4x3 : Matrix<E> = randomMatrix(rows: 4, columns: 3)
+            let m4x3 : Matrix<E> = randomWholeMatrix(rows: 4, columns: 3)
             XCTAssertEqual(m4x3, Matrix(m4x3.simd3x4))
             XCTAssertEqual((m4x3 * v3).simd4, m4x3.simd3x4 * v3.simd3)
 
-            let v4 : Matrix<E> = randomMatrix(rows: 4, columns: 1)
-            let m2x4 : Matrix<E> = randomMatrix(rows: 2, columns: 4)
+            let v4 : Matrix<E> = randomWholeMatrix(rows: 4, columns: 1)
+            let m2x4 : Matrix<E> = randomWholeMatrix(rows: 2, columns: 4)
             XCTAssertEqual(m2x4, Matrix(m2x4.simd4x2))
             XCTAssertEqual((m2x4 * v4).simd2, m2x4.simd4x2 * v4.simd4)
-            let m3x4 : Matrix<E> = randomMatrix(rows: 3, columns: 4)
+            let m3x4 : Matrix<E> = randomWholeMatrix(rows: 3, columns: 4)
             XCTAssertEqual(m3x4, Matrix(m3x4.simd4x3))
             XCTAssertEqual((m3x4 * v4).simd3, m3x4.simd4x3 * v4.simd4)
-            let m4x4 : Matrix<E> = randomMatrix(rows: 4, columns: 4)
+            let m4x4 : Matrix<E> = randomWholeMatrix(rows: 4, columns: 4)
             XCTAssertEqual(m4x4, Matrix(m4x4.simd4x4))
             XCTAssertEqual((m4x4 * v4).simd4, m4x4.simd4x4 * v4.simd4)
         }
@@ -330,36 +332,36 @@ final class LANumericsTests: XCTestCase {
         typealias E = Double
         
         stress {
-            let v2 : Matrix<E> = randomMatrix(rows: 2, columns: 1)
-            let m2x2 : Matrix<E> = randomMatrix(rows: 2, columns: 2)
+            let v2 : Matrix<E> = randomWholeMatrix(rows: 2, columns: 1)
+            let m2x2 : Matrix<E> = randomWholeMatrix(rows: 2, columns: 2)
             XCTAssertEqual(m2x2, Matrix(m2x2.simd2x2))
             XCTAssertEqual((m2x2 * v2).simd2, m2x2.simd2x2 * v2.simd2)
-            let m3x2 : Matrix<E> = randomMatrix(rows: 3, columns: 2)
+            let m3x2 : Matrix<E> = randomWholeMatrix(rows: 3, columns: 2)
             XCTAssertEqual(m3x2, Matrix(m3x2.simd2x3))
             XCTAssertEqual((m3x2 * v2).simd3, m3x2.simd2x3 * v2.simd2)
-            let m4x2 : Matrix<E> = randomMatrix(rows: 4, columns: 2)
+            let m4x2 : Matrix<E> = randomWholeMatrix(rows: 4, columns: 2)
             XCTAssertEqual(m4x2, Matrix(m4x2.simd2x4))
             XCTAssertEqual((m4x2 * v2).simd4, m4x2.simd2x4 * v2.simd2)
 
-            let v3 : Matrix<E> = randomMatrix(rows: 3, columns: 1)
-            let m2x3 : Matrix<E> = randomMatrix(rows: 2, columns: 3)
+            let v3 : Matrix<E> = randomWholeMatrix(rows: 3, columns: 1)
+            let m2x3 : Matrix<E> = randomWholeMatrix(rows: 2, columns: 3)
             XCTAssertEqual(m2x3, Matrix(m2x3.simd3x2))
             XCTAssertEqual((m2x3 * v3).simd2, m2x3.simd3x2 * v3.simd3)
-            let m3x3 : Matrix<E> = randomMatrix(rows: 3, columns: 3)
+            let m3x3 : Matrix<E> = randomWholeMatrix(rows: 3, columns: 3)
             XCTAssertEqual(m3x3, Matrix(m3x3.simd3x3))
             XCTAssertEqual((m3x3 * v3).simd3, m3x3.simd3x3 * v3.simd3)
-            let m4x3 : Matrix<E> = randomMatrix(rows: 4, columns: 3)
+            let m4x3 : Matrix<E> = randomWholeMatrix(rows: 4, columns: 3)
             XCTAssertEqual(m4x3, Matrix(m4x3.simd3x4))
             XCTAssertEqual((m4x3 * v3).simd4, m4x3.simd3x4 * v3.simd3)
 
-            let v4 : Matrix<E> = randomMatrix(rows: 4, columns: 1)
-            let m2x4 : Matrix<E> = randomMatrix(rows: 2, columns: 4)
+            let v4 : Matrix<E> = randomWholeMatrix(rows: 4, columns: 1)
+            let m2x4 : Matrix<E> = randomWholeMatrix(rows: 2, columns: 4)
             XCTAssertEqual(m2x4, Matrix(m2x4.simd4x2))
             XCTAssertEqual((m2x4 * v4).simd2, m2x4.simd4x2 * v4.simd4)
-            let m3x4 : Matrix<E> = randomMatrix(rows: 3, columns: 4)
+            let m3x4 : Matrix<E> = randomWholeMatrix(rows: 3, columns: 4)
             XCTAssertEqual(m3x4, Matrix(m3x4.simd4x3))
             XCTAssertEqual((m3x4 * v4).simd3, m3x4.simd4x3 * v4.simd4)
-            let m4x4 : Matrix<E> = randomMatrix(rows: 4, columns: 4)
+            let m4x4 : Matrix<E> = randomWholeMatrix(rows: 4, columns: 4)
             XCTAssertEqual(m4x4, Matrix(m4x4.simd4x4))
             XCTAssertEqual((m4x4 * v4).simd4, m4x4.simd4x4 * v4.simd4)
         }
@@ -437,7 +439,7 @@ final class LANumericsTests: XCTestCase {
                 let norm = (X - Y).infinityNorm
                 return norm < 0.001
             }
-            let A : Matrix<E> = randomMatrix()
+            let A : Matrix<E> = randomWholeMatrix()
             let m = A.rows
             let n = A.columns
             let k = min(m, n)
