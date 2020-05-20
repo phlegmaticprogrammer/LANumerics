@@ -47,7 +47,7 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral {
                          _ X : UnsafePointer<Self>, _ incX : Int32,
                          _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self
     
-    static func blas_adjointDot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self.Magnitude
+    static func blas_adjointDot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self
     
     static func blas_gemm(_ Order : CBLAS_ORDER, _ TransA : CBLAS_TRANSPOSE, _ TransB : CBLAS_TRANSPOSE,
                           _ M : Int32, _ N : Int32, _ K : Int32,
@@ -129,17 +129,17 @@ public extension LANumeric {
     }
 
     /// Returns the dot product of `A′` and `B`.
-    static func adjointDotProduct(_ A: Vector<Self>, _ B: Vector<Self>) -> Self.Magnitude {
+    static func adjointDotProduct(_ A: Vector<Self>, _ B: Vector<Self>) -> Self {
         precondition(A.count == B.count)
         return blas_adjointDot(Int32(A.count), A, 1, B, 1)
     }
 
-    /// Scales the product of `A` and `B` by `alpha` and adds it to the result of scaling `C` by `beta`. Optionally `A` and / or `B` can be transposed prior to that.
-    static func matrixProduct(_ alpha : Self, _ transposeA : Bool, _ A : Matrix<Self>, _ transposeB : Bool, _ B : Matrix<Self>, _ beta : Self, _ C : inout Matrix<Self>) {
-        let M = Int32(transposeA ? A.columns : A.rows)
-        let N = Int32(transposeB ? B.rows : B.columns)
-        let KA = Int32(transposeA ? A.rows : A.columns)
-        let KB = Int32(transposeB ? B.columns : B.rows)
+    /// Scales the product of `A` and `B` by `alpha` and adds it to the result of scaling `C` by `beta`. Optionally `A` and / or `B` can be adjoint prior to that.
+    static func matrixProduct(_ alpha : Self, _ adjointA : Bool, _ A : Matrix<Self>, _ adjointB : Bool, _ B : Matrix<Self>, _ beta : Self, _ C : inout Matrix<Self>) {
+        let M = Int32(adjointA ? A.columns : A.rows)
+        let N = Int32(adjointB ? B.rows : B.columns)
+        let KA = Int32(adjointA ? A.rows : A.columns)
+        let KB = Int32(adjointB ? B.columns : B.rows)
         precondition(KA == KB)
         precondition(M == C.rows)
         precondition(N == C.columns)
@@ -148,29 +148,29 @@ public extension LANumeric {
             return
         }
         asMutablePointer(&C.elements) { C in
-            let ta = transposeA ? CblasTrans : CblasNoTrans
-            let tb = transposeB ? CblasTrans : CblasNoTrans
+            let ta = adjointA ? CblasTrans : CblasNoTrans
+            let tb = adjointB ? CblasTrans : CblasNoTrans
             blas_gemm(CblasColMajor, ta, tb, M, N, KA, alpha, A.elements, Int32(A.rows), B.elements, Int32(B.rows), beta, C, M)
         }
     }
 
-    /// Scales the product of `A` and `X` by `alpha` and adds it to the result of scaling `Y` by `beta`. Optionally `A` can be transposed prior to that.
-    static func matrixVectorProduct(_ alpha : Self, _ transposeA : Bool, _ A : Matrix<Self>, _ X : Vector<Self>, _ beta : Self, _ Y : inout Vector<Self>) {
+    /// Scales the product of `A` and `X` by `alpha` and adds it to the result of scaling `Y` by `beta`. Optionally `A` can be adjoint prior to that.
+    static func matrixVectorProduct(_ alpha : Self, _ adjointA : Bool, _ A : Matrix<Self>, _ X : Vector<Self>, _ beta : Self, _ Y : inout Vector<Self>) {
         let M = Int32(A.rows)
         let N = Int32(A.columns)
-        precondition(transposeA ? (N == Y.count) : (N == X.count))
-        precondition(transposeA ? (M == X.count) : (M == Y.count))
+        precondition(adjointA ? (N == Y.count) : (N == X.count))
+        precondition(adjointA ? (M == X.count) : (M == Y.count))
         guard M > 0 else {
             scaleVector(beta, &Y)
             return
         }
         asMutablePointer(&Y) { Y in
-            let ta = transposeA ? CblasTrans : CblasNoTrans
+            let ta = adjointA ? CblasTrans : CblasNoTrans
             blas_gemv(CblasColMajor, ta, M, N, alpha, A.elements, M, X, 1, beta, Y, 1)
         }
     }
 
-    /// Scales the product of `X` and  the transpose of `Y` by `alpha` and adds it to `A`.
+    /// Scales the product of `X` and  the adjoint of `Y` by `alpha` and adds it to `A`.
     static func vectorVectorProduct(_ alpha : Self, _ X : Vector<Self>, _ Y : Vector<Self>, _ A : inout Matrix<Self>) {
         let M = Int32(A.rows)
         let N = Int32(A.columns)
@@ -205,12 +205,12 @@ public extension LANumeric {
     
     /// Finds the minimum least squares solutions `x` of minimizing `(b - A * x).euclideanNorm` or `(b - A′ * x).euclideanNorm` and returns the result.
     /// Each column `x` in the result corresponds to the solution for the corresponding column `b` in `B`.
-    static func solveLinearLeastSquares(_ A : Matrix<Self>, _ transposeA : Bool, _ B : Matrix<Self>) -> Matrix<Self>? {
-        var trans : Int8 = (transposeA ? 0x54 /* "T" */ : 0x4E /* "N" */)
+    static func solveLinearLeastSquares(_ A : Matrix<Self>, _ adjointA : Bool, _ B : Matrix<Self>) -> Matrix<Self>? {
+        var trans : Int8 = (adjointA ? 0x54 /* "T" */ : 0x4E /* "N" */)
         var m : Int32 = Int32(A.rows)
         var n : Int32 = Int32(A.columns)
-        let X = transposeA ? A.rows : A.columns
-        precondition(transposeA ? B.rows == n : B.rows == m)
+        let X = adjointA ? A.rows : A.columns
+        precondition(adjointA ? B.rows == n : B.rows == m)
         var A = A
         A.extend(rows: 1)
         var B = B
@@ -415,12 +415,12 @@ public extension Matrix where Element : LANumeric {
         return solve(Matrix(rhs))?.vector
     }
     
-    func solveLeastSquares(transpose : Bool = false, _ rhs : Matrix) -> Matrix? {
-        return Element.solveLinearLeastSquares(self, transpose, rhs)
+    func solveLeastSquares(adjoint : Bool = false, _ rhs : Matrix) -> Matrix? {
+        return Element.solveLinearLeastSquares(self, adjoint, rhs)
     }
     
-    func solveLeastSquares(transpose : Bool = false, _ rhs : Vector<Element>) -> Vector<Element>? {
-        return Element.solveLinearLeastSquares(self, transpose, Matrix(rhs))?.vector
+    func solveLeastSquares(adjoint : Bool = false, _ rhs : Vector<Element>) -> Vector<Element>? {
+        return Element.solveLinearLeastSquares(self, adjoint, Matrix(rhs))?.vector
     }
     
     func svd(left : SVDJob = .all, right : SVDJob = .all) -> (singularValues : Vector<Element>, left : Matrix, right : Matrix) {
@@ -436,11 +436,11 @@ public extension Matrix where Element : LANumeric {
     }
 
     static func ′∖ (lhs : Matrix, rhs : Matrix) -> Matrix {
-        return lhs.solveLeastSquares(transpose: true, rhs)!
+        return lhs.solveLeastSquares(adjoint: true, rhs)!
     }
     
     static func ′∖ (lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
-        return lhs.solveLeastSquares(transpose: true, rhs)!
+        return lhs.solveLeastSquares(adjoint: true, rhs)!
     }
 }
 
@@ -450,7 +450,7 @@ public extension Matrix where Element : LANumeric {
     
 }
 
-public func ′* <Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Element.Magnitude {
+public func ′* <Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Element {
     return Element.adjointDotProduct(left, right)
 }
 

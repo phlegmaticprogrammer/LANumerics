@@ -194,7 +194,7 @@ final class LANumericsTests: XCTestCase {
             let X : Vector<E> = randomWholeVector()
             let Y : Vector<E> = randomWholeVector(count: X.count)
             XCTAssertEqual(E.dotProduct(X, Y), dot(X, Y))
-            XCTAssertEqual(E(magnitude: X ′* Y), dot(X, Y))
+            XCTAssertEqual(X ′* Y, dot(X, Y))
         }
         stress { generic(Float.self) }
         stress { generic(Double.self) }

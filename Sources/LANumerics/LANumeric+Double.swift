@@ -46,7 +46,7 @@ extension Double : LANumeric {
         cblas_ddot(N, X, incX, Y, incY)
     }
     
-    public static func blas_adjointDot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self.Magnitude {
+    public static func blas_adjointDot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self {
         cblas_ddot(N, X, incX, Y, incY)
     }
 
