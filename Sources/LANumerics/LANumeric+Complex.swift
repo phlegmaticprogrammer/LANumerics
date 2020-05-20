@@ -99,19 +99,32 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral {
     }
 
     public static func blas_axpby(_ N : Int32, _ alpha : Self, _ X : UnsafePointer<Self>, _ incX : Int32, _ beta : Self, _ Y : UnsafeMutablePointer<Self>, _ incY : Int32) {
-        fatalError()
+        var _alpha = alpha
+        dispatch(
+            float: { cblas_caxpy(N, &_alpha, X, incX, Y, incY) },
+            double: { cblas_zaxpy(N, &_alpha, X, incX, Y, incY) }
+        )
     }
     
     public static func blas_iamax(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32) -> Int32 {
-        fatalError()
+        dispatch(
+            float: { cblas_icamax(N, X, incX) },
+            double: { cblas_izamax(N, X, incX) }
+        )
     }
 
     public static func blas_dot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self {
-        fatalError()
+        dispatch(
+            float: { fatalError() },
+            double: { fatalError() }
+        )
     }
     
     public static func blas_adjointDot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self {
-        fatalError()
+        dispatch(
+            float: { fatalError() },
+            double: { fatalError() }
+        )
     }
 
     public static func blas_gemm(_ Order : CBLAS_ORDER, _ TransA : CBLAS_TRANSPOSE, _ TransB : CBLAS_TRANSPOSE,
@@ -119,7 +132,10 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral {
                                  _ alpha : Self, _ A : UnsafePointer<Self>, _ lda : Int32, _ B : UnsafePointer<Self>, _ ldb : Int32,
                                  _ beta : Self, _ C : UnsafeMutablePointer<Self>, _ ldc : Int32)
     {
-        fatalError()
+        dispatch(
+            float: { fatalError() },
+            double: { fatalError() }
+        )
     }
 
     public static func blas_gemv(_ Order : CBLAS_ORDER, _ TransA : CBLAS_TRANSPOSE, _ M : Int32, _ N : Int32,
@@ -127,7 +143,10 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral {
                                  _ X : UnsafePointer<Self>, _ incX : Int32,
                                  _ beta : Self, _ Y : UnsafeMutablePointer<Self>, _ incY : Int32)
     {
-        fatalError()
+        dispatch(
+            float: { fatalError() },
+            double: { fatalError() }
+        )
     }
 
     public static func blas_ger(_ Order : CBLAS_ORDER, _ M : Int32, _ N : Int32,
@@ -135,7 +154,10 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral {
                                 _ Y : UnsafePointer<Self>, _ incY : Int32,
                                 _ A : UnsafeMutablePointer<Self>, _ lda : Int32)
     {
-        fatalError()
+        dispatch(
+            float: { fatalError() },
+            double: { fatalError() }
+        )
     }
 
     public static func lapack_gesv(_ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
@@ -144,7 +166,10 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral {
                                    _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
                                    _ info : UnsafeMutablePointer<Int32>) -> Int32
     {
-        fatalError()
+        dispatch(
+            float: { fatalError() },
+            double: { fatalError() }
+        )
     }
 
     public static func lapack_gels(_ trans : UnsafeMutablePointer<Int8>,
@@ -154,7 +179,10 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral {
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                                    _ info : UnsafeMutablePointer<Int32>) -> Int32
     {
-        fatalError()
+        dispatch(
+            float: { fatalError() },
+            double: { fatalError() }
+        )
     }
 
     public static func lapack_gesvd(_ jobu : UnsafeMutablePointer<Int8>, _ jobvt : UnsafeMutablePointer<Int8>,
@@ -166,7 +194,10 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral {
                                     _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                                     _ info : UnsafeMutablePointer<Int32>) -> Int32
     {
-        fatalError()
+        dispatch(
+            float: { fatalError() },
+            double: { fatalError() }
+        )
     }
 }
 
