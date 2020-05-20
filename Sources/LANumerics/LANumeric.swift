@@ -63,6 +63,19 @@ infix operator ′*′ : MultiplicationPrecedence
 infix operator ∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
 infix operator ′∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
 
+public extension Matrix where Element : Numeric {
+    
+    static func eye(_ m : Int) -> Matrix {
+        return Matrix(diagonal : [Element](repeating: 1, count: m))
+    }
+    
+    static func eye(_ m : Int, _ n : Int) -> Matrix {
+        return Matrix(rows: m, columns: n, diagonal : [Element](repeating: 1, count: min(n, m)))
+    }
+
+
+}
+
 public extension Matrix where Element : LANumeric {
     
     var manhattanNorm : Element.Magnitude { return Element.manhattanNorm(elements) }
@@ -102,16 +115,7 @@ public extension Matrix where Element : LANumeric {
         precondition(hasSameDimensions(other))
         Element.scaleAndAddVectors(beta, other.elements, alpha, &self.elements)
     }
-        
-    static func eye(_ m : Int) -> Matrix {
-        return Matrix(diagonal : [Element](repeating: 1, count: m))
-    }
-    
-    static func eye(_ m : Int, _ n : Int) -> Matrix {
-        return Matrix(rows: m, columns: n, diagonal : [Element](repeating: 1, count: min(n, m)))
-    }
-
-    
+            
     static func * (left : Matrix, right : Matrix) -> Matrix {
         var C = Matrix<Element>(rows: left.rows, columns: right.columns)
         Element.matrixProduct(1, false, left, false, right, 0, &C)
