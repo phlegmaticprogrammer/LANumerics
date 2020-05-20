@@ -503,7 +503,7 @@ public func ′* <Element : LANumeric>(left : Vector<Element>, right : Vector<El
 
 public func *′ <Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Matrix<Element> {
     var A = Matrix<Element>(rows: left.count, columns: right.count)
-    Element.vectorVectorProduct(1, left, right, &A)
+    Element.vectorAdjointVectorProduct(1, left, right, &A)
     return A
 }
 

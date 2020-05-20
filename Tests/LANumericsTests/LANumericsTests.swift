@@ -268,23 +268,43 @@ final class LANumericsTests: XCTestCase {
         }
     }
 
-    func testVectorVectorProduct() {
-        func generic<E : LAFP>(_ type : E.Type) {
+    func testVectorAdjointVectorProduct() {
+        func generic<E : Num>(_ type : E.Type) {
             let X : Matrix<E> = randomWholeMatrix(rows: Int.random(in: 0 ... 10), columns: 1)
-            let Y : Matrix<E> = randomWholeMatrix(rows: 1, columns: Int.random(in: 0 ... 10))
-            XCTAssertEqual(X.vector *′ Y.vector, mul(X, Y))
-            var A : Matrix<E> = randomWholeMatrix(rows: X.rows, columns: Y.columns)
+            let Y : Matrix<E> = randomWholeMatrix(rows: Int.random(in: 0 ... 10), columns: 1)
+            XCTAssertEqual(X.vector *′ Y.vector, mul(X, Y′))
+            var A : Matrix<E> = randomWholeMatrix(rows: X.rows, columns: Y.rows)
             let alpha : E = randomWhole()
-            let R = scale(alpha, mul(X, Y)) + A
+            let R = scale(alpha, mul(X, Y′)) + A
+            E.vectorAdjointVectorProduct(alpha, X.vector, Y.vector, &A)
+            XCTAssertEqual(A, R)
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
+    
+    func testVectorVectorProduct() {
+        func generic<E : Num>(_ type : E.Type) {
+            let X : Matrix<E> = randomWholeMatrix(rows: Int.random(in: 0 ... 10), columns: 1)
+            let Y : Matrix<E> = randomWholeMatrix(rows: Int.random(in: 0 ... 10), columns: 1)
+            var A : Matrix<E> = randomWholeMatrix(rows: X.rows, columns: Y.rows)
+            let alpha : E = randomWhole()
+            let R = scale(alpha, mul(X, Y.transpose)) + A
             E.vectorVectorProduct(alpha, X.vector, Y.vector, &A)
             XCTAssertEqual(A, R)
         }
         stress {
             generic(Float.self)
             generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
         }
     }
-    
+
     func testSIMDVectors() {
         func generic<E : LAFP & SIMDScalar>(_ type : E.Type) {
             func test(_ count : Int, transform : (Matrix<E>) -> Matrix<E>) {
@@ -409,11 +429,12 @@ final class LANumericsTests: XCTestCase {
     }
     
     func testSolveLinearEquations() {
-        func generic<E : BLAFP>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             let A = Matrix<E>(rows: [[7, 5, -3], [3, -5, 2], [5, 3, -7]])
             let B = Matrix<E>([16, -8, 0])
             let X = Matrix<E>([1, 3, 2])
-            XCTAssert((A.solve(B)! - X).infinityNorm < 0.0001)
+            let eps = epsilon(E.self)
+            XCTAssert((A.solve(B)! - X).infinityNorm < eps)
             let Z = Matrix<E>(rows: 3, columns: 3)
             XCTAssertEqual(Z.solve(B), nil)
             XCTAssertEqual(Z.solve([0, 0, 0]), nil)
@@ -421,15 +442,18 @@ final class LANumericsTests: XCTestCase {
         }
         generic(Float.self)
         generic(Double.self)
+        generic(Complex<Float>.self)
+        generic(Complex<Double>.self)
     }
 
     func testSolveLinearLeastSquares() {
-        func generic<E : BLAFP>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             let A = Matrix<E>(rows: [[7, 5, -3], [3, -5, 2], [5, 3, -7]])
             let B = Matrix<E>([16, -8, 0])
             let X = Matrix<E>([1, 3, 2])
-            XCTAssert((A ∖ B - X).infinityNorm < 0.0001)
-            XCTAssert((A′ ′∖ B - X).infinityNorm < 0.0001)
+            let eps = epsilon(E.self)
+            XCTAssert((A ∖ B - X).infinityNorm < eps)
+            XCTAssert((A′ ′∖ B - X).infinityNorm < eps)
             let Z = Matrix<E>(rows: 3, columns: 3)
             XCTAssertEqual(Z ∖ B, Matrix<E>.zeros(3, 1))
             XCTAssertEqual(Z ∖ [0, 0, 0], [0, 0, 0])
@@ -438,10 +462,12 @@ final class LANumericsTests: XCTestCase {
         }
         generic(Float.self)
         generic(Double.self)
+        generic(Complex<Float>.self)
+        generic(Complex<Double>.self)
     }
     
     func testLäuchliExample() {
-        func generic<E : BLAFP>(eps : E) {
+        func generic<E : Num & BinaryFloatingPoint>(eps : E) {
             let A = Matrix(rows: [[1, 1], [eps, 0], [0, eps]])
             let b = [2, eps, eps]
             XCTAssertNil((A′*A).solve(A′*b))
