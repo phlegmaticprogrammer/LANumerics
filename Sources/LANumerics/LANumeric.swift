@@ -152,7 +152,7 @@ public extension LANumeric {
         }
     }
     
-    /// Returns the index of the element with the largest length (-1 if the vector is empty).
+    /// Returns the index of the element with the largest manhattan length (-1 if the vector is empty).
     static func indexOfLargestElem(_ vector: Vector<Self>) -> Int {
         guard !vector.isEmpty else { return -1 }
         return Int(blas_iamax(Int32(vector.count), vector, 1))
@@ -377,6 +377,10 @@ public extension Matrix where Element : LANumeric {
             return 0
         }
     }
+    
+    var maxNorm : Element.Magnitude {
+        return largest.manhattanLength
+    }
         
     static func + (left : Matrix, right : Matrix) -> Matrix {
         var result = left
@@ -491,10 +495,8 @@ public extension Matrix where Element : LANumeric {
     }
 }
 
-public extension Matrix where Element : LANumeric {
-    
-    var infinityNorm : Element.Magnitude { return largest.magnitude }
-    
+public func * <Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Element {
+    return Element.dotProduct(left, right)
 }
 
 public func ′* <Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Element {

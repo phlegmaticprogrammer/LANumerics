@@ -5,11 +5,9 @@ import simd
 
 final class LANumericsTests: XCTestCase {
 
-    public typealias LAFP = LANumeric & ExpressibleByFloatLiteral
-    public typealias BLAFP = LAFP & BinaryFloatingPoint
     public typealias Num = LANumeric
 
-    func countingMatrix<F : LAFP>(rows : Int, columns : Int) -> Matrix<F> {
+    func countingMatrix<F : Num>(rows : Int, columns : Int) -> Matrix<F> {
         return Matrix<F>(rows: rows, columns: columns) { r, c in
             return F(exactly: c * rows + r + 1)!
         }
@@ -57,43 +55,40 @@ final class LANumericsTests: XCTestCase {
 
     func testManhattanNorm() {
         func add(_ n : Int) -> Int { n * (n + 1) / 2 }
-        func generic<E : LAFP>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             let u : Matrix<E> = countingMatrix(rows : 4, columns : 3)
             XCTAssertEqual(u.manhattanNorm, E.Magnitude(exactly: add(u.rows * u.columns))!)
-            XCTAssertEqual(u.manhattanNorm, u.fold(0) { x, y in x + y.magnitude })
+            XCTAssertEqual(u.manhattanNorm, u.fold(0) { x, y in x + y.manhattanLength })
             let w : Matrix<E> = randomWholeMatrix()
-            XCTAssertEqual(w.manhattanNorm, w.fold(0) { x, y in x + y.magnitude })
+            XCTAssertEqual(w.manhattanNorm, w.fold(0) { x, y in x + y.manhattanLength })
         }
-        stress { generic(Float.self) }
-        stress { generic(Double.self) }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
     }
 
-    func testEuclideanNorm() {
-        func generic<E : BLAFP>(_ type : E.Type) {
+    func testNorm() {
+        func generic<E : Num>(_ type : E.Type) where E.Magnitude : LANumeric {
             let u : Matrix<E> = randomWholeMatrix()
             let l2 = u.norm
-            let sum = u.fold { x, y in x + y*y }
-            XCTAssertEqual((l2 * l2).rounded(), sum)
+            let sum = u.fold(0) { x, y in x + y.lengthSquared }
+            XCTSame(l2 * l2, sum)
         }
-        stress { generic(Float.self) }
-        stress { generic(Double.self) }
-    }
-
-    func testInfinityNorm() {
-        func generic<E : LAFP>(_ type : E.Type) {
-            let u : Matrix<E> = randomWholeMatrix()
-            let norm = u.infinityNorm
-            let result = u.fold(0) { x, y in max(x, y.magnitude) }
-            XCTAssertEqual(norm, result)
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
         }
-        stress { generic(Float.self) }
-        stress { generic(Double.self) }
     }
     
     func testScaleAndAddFloat() {
-        func generic<E : LAFP>(_ type : E.Type) {
-            let m = Int.random(in: 0 ... 10)
-            let n = Int.random(in: 0 ... 10)
+        func generic<E : Num>(_ type : E.Type) {
+            let m = Int.random(in: 1 ... 10)
+            let n = Int.random(in: 1 ... 10)
             let u : Matrix<E> = randomWholeMatrix(rows: m, columns: n)
             let v : Matrix<E> = randomWholeMatrix(rows: m, columns: n)
             let alpha : E = randomWhole()
@@ -107,18 +102,26 @@ final class LANumericsTests: XCTestCase {
             XCTAssertEqual(u + .zeros(m, n), u)
             XCTAssertEqual(.zeros(m, n) + u, u)
         }
-        stress { generic(Float.self) }
-        stress { generic(Double.self) }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
     }
     
-    func testIndexOfLargestElement() {
-        func generic<E : LAFP>(_ type : E.Type) {
+    func testMaxNorm() {
+        func generic<E : Num>(_ type : E.Type) {
             let u : Matrix<E> = randomWholeMatrix()
-            let largest = u.largest.magnitude
-            XCTAssert(u.forall { x in largest >= x.magnitude }, "largest = \(largest) in \(u)")
+            let norm = u.maxNorm
+            XCTAssert(u.forall { x in norm >= x.manhattanLength }, "norm = \(norm) of \(u)")
         }
-        stress { generic(Float.self) }
-        stress { generic(Double.self) }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
     }
     
     func scale<E:Num>(_ alpha : E, _ vec : Vector<E>) -> Vector<E> {
@@ -157,12 +160,12 @@ final class LANumericsTests: XCTestCase {
     }
     
     func epsilon<E : Num>(_ type : E.Type) -> E.Magnitude {
-        let e : E = 0.01
+        let e : E = 0.1
         return e.magnitude
     }
     
     func XCTSame<E : Num>(_ X : Matrix<E>, _ Y : Matrix<E>) {
-        let norm = (X - Y).infinityNorm
+        let norm = (X - Y).maxNorm
         XCTAssert(norm < epsilon(E.self), "norm is \(norm), X = \(X), Y = \(Y)")
     }
 
@@ -173,7 +176,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testScale() {
-        func generic<E : LAFP>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             var X : Vector<E> = randomWholeVector()
             let alpha : E = randomWhole()
             let Y = scale(alpha, X)
@@ -185,23 +188,33 @@ final class LANumericsTests: XCTestCase {
             let A : Matrix<E> = randomWholeMatrix()
             XCTAssertEqual(alpha * A, scale(alpha, A))
         }
-        stress { generic(Float.self) }
-        stress { generic(Double.self) }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
     }
     
     func testDotProduct() {
-        func generic<E : LAFP>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             let X : Vector<E> = randomWholeVector()
             let Y : Vector<E> = randomWholeVector(count: X.count)
             XCTAssertEqual(E.dotProduct(X, Y), dot(X, Y))
-            XCTAssertEqual(X ′* Y, dot(X, Y))
+            XCTAssertEqual(X * Y, dot(X, Y))
+            XCTAssertEqual(E.adjointDotProduct(X, Y), dot(X′.vector, Y))
+            XCTAssertEqual(X ′* Y, dot(X′.vector, Y))
         }
-        stress { generic(Float.self) }
-        stress { generic(Double.self) }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
     }
     
     func testMatrixProduct() {
-        func generic<E : LAFP>(_ type : E.Type) {
+        func generic<E : Num>(_ type : E.Type) {
             let M = Int.random(in: 0 ... 10)
             let N = Int.random(in: 0 ... 10)
             let K = Int.random(in: 0 ... 10)
@@ -235,6 +248,8 @@ final class LANumericsTests: XCTestCase {
         stress {
             generic(Float.self)
             generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
         }
     }
 
@@ -308,7 +323,7 @@ final class LANumericsTests: XCTestCase {
     }
 
     func testSIMDVectors() {
-        func generic<E : LAFP & SIMDScalar>(_ type : E.Type) {
+        func generic<E : Num & SIMDScalar>(_ type : E.Type) {
             func test(_ count : Int, transform : (Matrix<E>) -> Matrix<E>) {
                 let m : Matrix<E> = randomWholeMatrix(rows: count, columns: 1)
                 XCTAssertEqual(m, transform(m))
@@ -436,7 +451,7 @@ final class LANumericsTests: XCTestCase {
             let B = Matrix<E>([16, -8, 0])
             let X = Matrix<E>([1, 3, 2])
             let eps = epsilon(E.self)
-            XCTAssert((A.solve(B)! - X).infinityNorm < eps)
+            XCTAssert((A.solve(B)! - X).maxNorm < eps)
             let Z = Matrix<E>(rows: 3, columns: 3)
             XCTAssertEqual(Z.solve(B), nil)
             XCTAssertEqual(Z.solve([0, 0, 0]), nil)
@@ -454,8 +469,8 @@ final class LANumericsTests: XCTestCase {
             let B = Matrix<E>([16, -8, 0])
             let X = Matrix<E>([1, 3, 2])
             let eps = epsilon(E.self)
-            XCTAssert((A ∖ B - X).infinityNorm < eps)
-            XCTAssert((A′ ′∖ B - X).infinityNorm < eps)
+            XCTAssert((A ∖ B - X).maxNorm < eps)
+            XCTAssert((A′ ′∖ B - X).maxNorm < eps)
             let Z = Matrix<E>(rows: 3, columns: 3)
             XCTAssertEqual(Z ∖ B, Matrix<E>.zeros(3, 1))
             XCTAssertEqual(Z ∖ [0, 0, 0], [0, 0, 0])
@@ -473,8 +488,8 @@ final class LANumericsTests: XCTestCase {
             let A = Matrix(rows: [[1, 1], [eps, 0], [0, eps]])
             let b = [2, eps, eps]
             XCTAssertNil((A′*A).solve(A′*b))
-            XCTAssert((A ∖ Matrix(b) - Matrix([1, 1])).infinityNorm < 10 * eps)
-            XCTAssert((A′ ′∖ Matrix(b) - Matrix([1, 1])).infinityNorm < 10 * eps)
+            XCTAssert((A ∖ Matrix(b) - Matrix([1, 1])).maxNorm < 10 * eps)
+            XCTAssert((A′ ′∖ Matrix(b) - Matrix([1, 1])).maxNorm < 10 * eps)
         }
         generic(eps: Double(1e-16))
         generic(eps: Float(1e-7))
@@ -483,11 +498,11 @@ final class LANumericsTests: XCTestCase {
     func testSingularValueDecomposition() {
         func generic<E : Num>(_ type : E.Type) {
             func same(_ X : Matrix<E>, _ Y : Matrix<E>) {
-                let norm = (X - Y).infinityNorm
+                let norm = (X - Y).maxNorm
                 XCTAssert(norm < epsilon(E.self), "norm is \(norm), X = \(X), Y = \(Y)")
             }
             func isSame(_ X : Matrix<E>, _ Y : Matrix<E>) -> Bool {
-                let norm = (X - Y).infinityNorm
+                let norm = (X - Y).maxNorm
                 return norm < epsilon(E.self)
             }
             let A : Matrix<E> = randomWholeMatrix()

@@ -114,9 +114,10 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : Matrix
 
     public static func blas_axpby(_ N : Int32, _ alpha : Self, _ X : UnsafePointer<Self>, _ incX : Int32, _ beta : Self, _ Y : UnsafeMutablePointer<Self>, _ incY : Int32) {
         var _alpha = alpha
+        var _beta = beta
         dispatch(
-            float: { cblas_caxpy(N, &_alpha, X, incX, Y, incY) },
-            double: { cblas_zaxpy(N, &_alpha, X, incX, Y, incY) }
+            float: { catlas_caxpby(N, &_alpha, X, incX, &_beta, Y, incY) },
+            double: { catlas_zaxpby(N, &_alpha, X, incX, &_beta, Y, incY) }
         )
     }
     
