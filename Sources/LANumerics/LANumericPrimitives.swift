@@ -4,6 +4,8 @@ import Accelerate
 
 public protocol LANumericPrimitives : MatrixElement, Numeric {
     
+    var manhattanAbs : Self.Magnitude { get }
+    
     static func random(in : ClosedRange<Self.Magnitude>) -> Self
 
     static func randomWhole(in : ClosedRange<Int>) -> Self
@@ -13,6 +15,8 @@ public protocol LANumericPrimitives : MatrixElement, Numeric {
 }
 
 extension Float : LANumericPrimitives {
+    
+    public var manhattanAbs : Float { return magnitude }
 
     public static func randomWhole(in range : ClosedRange<Int>) -> Self {
         return Float(Int.random(in: range))
@@ -26,6 +30,8 @@ extension Float : LANumericPrimitives {
 
 extension Double : LANumericPrimitives {
         
+    public var manhattanAbs : Double { return magnitude }
+
     public static func randomWhole(in range : ClosedRange<Int>) -> Self {
         return Double(Int.random(in: range))
     }
@@ -43,6 +49,8 @@ extension Double : LANumericPrimitives {
 
 extension Complex : LANumericPrimitives {
     
+    public var manhattanAbs : Magnitude { return real.magnitude + imaginary.magnitude }
+
     public static func random(in range: ClosedRange<RealType>) -> Self {
         if RealType.self == Float.self {
             let r = range as! ClosedRange<Float>

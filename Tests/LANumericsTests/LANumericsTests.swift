@@ -1,5 +1,6 @@
 import XCTest
 import LANumerics
+import Numerics
 import simd
 
 final class LANumericsTests: XCTestCase {
@@ -13,17 +14,17 @@ final class LANumericsTests: XCTestCase {
         }
     }
     
-    func randomWhole<F : LAFP>() -> F {
+    func randomWhole<F : LANumericPrimitives>() -> F {
         F.randomWhole(in: -100 ... 100)
     }
     
-    func randomWholeMatrix<F : LAFP>(rows : Int = Int.random(in: 0 ... 10), columns : Int = Int.random(in: 0 ... 10)) -> Matrix<F> {
+    func randomWholeMatrix<F : LANumericPrimitives>(rows : Int = Int.random(in: 0 ... 10), columns : Int = Int.random(in: 0 ... 10)) -> Matrix<F> {
         return Matrix<F>(rows: rows, columns: columns) { _ , _ in
             randomWhole()
         }
     }
     
-    func randomWholeVector<F : LAFP>(count : Int = Int.random(in: 0 ... 10)) -> Vector<F> {
+    func randomWholeVector<F : LANumericPrimitives>(count : Int = Int.random(in: 0 ... 10)) -> Vector<F> {
         var X : Vector<F> = []
         for _ in 0 ..< count {
             X.append(randomWhole())
@@ -463,6 +464,19 @@ final class LANumericsTests: XCTestCase {
             generic(Float.self)
             generic(Double.self)
         }
+    }
+    
+    func test_blas_asum() {
+        func generic<E : LANumericPrimitives>(_ type : E.Type) {
+            let v : Vector<E> = randomWholeVector()
+            let asum = Matrix(v).fold(0) { x, y in x + y.manhattanAbs }
+            let blas_asum = E.blas_asum(Int32(v.count), v, 1)
+            XCTAssertEqual(asum, blas_asum)
+        }
+        generic(Float.self)
+        generic(Double.self)
+        generic(Complex<Float>.self)
+        generic(Complex<Double>.self)
     }
 
     
