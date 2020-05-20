@@ -6,7 +6,7 @@ public protocol LANumericPrimitives : MatrixElement, Numeric, ExpressibleByFloat
     
     init(magnitude : Self.Magnitude)
 
-    var manhattanAbs : Self.Magnitude { get }
+    var manhattanLength : Self.Magnitude { get }
     
     var length : Self.Magnitude { get }
     
@@ -24,7 +24,7 @@ public protocol LANumericPrimitives : MatrixElement, Numeric, ExpressibleByFloat
 
 extension Float : LANumericPrimitives {
     
-    public var manhattanAbs : Float { return magnitude }
+    public var manhattanLength : Float { return magnitude }
     
     public var adjoint : Float { return self }
     
@@ -52,7 +52,7 @@ extension Float : LANumericPrimitives {
 
 extension Double : LANumericPrimitives {
         
-    public var manhattanAbs : Double { return magnitude }
+    public var manhattanLength : Double { return magnitude }
 
     public var adjoint : Double { return self }
 
@@ -104,7 +104,7 @@ extension Complex : ExpressibleByFloatLiteral {
 
 extension Complex : LANumericPrimitives {
         
-    public var manhattanAbs : Magnitude { return real.magnitude + imaginary.magnitude }
+    public var manhattanLength : Magnitude { return real.magnitude + imaginary.magnitude }
 
     public var adjoint : Complex { return self.conjugate }
 

@@ -485,7 +485,7 @@ final class LANumericsTests: XCTestCase {
     func test_blas_asum() {
         func generic<E : LANumericPrimitives>(_ type : E.Type) {
             let v : Vector<E> = randomWholeVector()
-            let asum = Matrix(v).fold(0) { x, y in x + y.manhattanAbs }
+            let asum = Matrix(v).fold(0) { x, y in x + y.manhattanLength }
             let blas_asum = E.blas_asum(Int32(v.count), v, 1)
             XCTAssertEqual(asum, blas_asum)
         }
