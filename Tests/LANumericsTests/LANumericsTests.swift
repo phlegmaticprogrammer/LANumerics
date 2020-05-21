@@ -582,5 +582,24 @@ final class LANumericsTests: XCTestCase {
             generic(Complex<Double>.self)
         }
     }
+    
+    func testEigen() {
+        func generic<E : Num>(_ type : E.Type) {
+            let n = Int.random(in: 0 ... 10)
+            var A : Matrix<E> = randomWholeMatrix(rows: n, columns: n)
+            A = 0.5 * (A + A′)
+            let eigen = A.eigen()!
+            let D = Matrix(diagonal: eigen.eigenValues.map{ x in E(magnitude: x) })
+            let B = eigen.eigenVectors
+            XCTSame(B ′* B, .eye(n))
+            XCTSame(B * D *′ B, A)
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
 
 }
