@@ -254,5 +254,19 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
             }
         )
     }
+    
+    public static func lapack_heev(_ jobz : UnsafeMutablePointer<Int8>, _ uplo : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                                   _ w : UnsafeMutablePointer<Self.Magnitude>,
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
+                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+    {
+        var rwork : [Self.Magnitude] = Array(repeating: 0, count: max(1, 3*Int(n.pointee)-2))
+        return dispatch(
+            float: { cheev_(jobz, uplo, n, recast(a), lda, recast(w), recast(work), lwork, recast(&rwork), info) },
+            double: { zheev_(jobz, uplo, n, recast(a), lda, recast(w), recast(work), lwork, recast(&rwork), info) }
+        )
+    }
+
 }
 

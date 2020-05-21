@@ -113,5 +113,15 @@ extension Float : LANumeric {
     {
         sgesvd_(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, work, lwork, info)
     }
+    
+    public static func lapack_heev(_ jobz : UnsafeMutablePointer<Int8>, _ uplo : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                                   _ w : UnsafeMutablePointer<Self.Magnitude>,
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
+                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+    {
+        ssyev_(jobz, uplo, n, a, lda, w, work, lwork, info)
+    }
+
 
 }

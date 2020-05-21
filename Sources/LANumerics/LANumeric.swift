@@ -1,4 +1,5 @@
 import Accelerate
+import Numerics
 
 public enum SVDJob {
     case all
@@ -19,7 +20,7 @@ public enum Transpose {
     case transpose
     case adjoint
     
-    func blas(complex: Bool) -> Int8 {
+    internal func blas(complex: Bool) -> Int8 {
         switch self {
         case .none: return   0x4E /* "N" */
         case .transpose: return 0x54 /* "T" */
@@ -28,7 +29,7 @@ public enum Transpose {
         }
     }
     
-    var cblas : CBLAS_TRANSPOSE {
+    internal var cblas : CBLAS_TRANSPOSE {
         switch self {
         case .none: return CblasNoTrans
         case .transpose: return CblasTrans
@@ -122,13 +123,19 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral wh
                              _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                              _ info : UnsafeMutablePointer<Int32>) -> Int32
 
+    static func lapack_heev(_ jobz : UnsafeMutablePointer<Int8>, _ uplo : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
+                            _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                            _ w : UnsafeMutablePointer<Self.Magnitude>,
+                            _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
+                            _ info : UnsafeMutablePointer<Int32>) -> Int32
+
 }
 
 public extension LANumeric {
 
     /// Computes the sum of the manhattanLengths of all elements in `vector`.
     static func manhattanLength(_ vector : Vector<Self>) -> Self.Magnitude {
-        return blas_asum(Int32(vector.count), vector, 1)
+         return blas_asum(Int32(vector.count), vector, 1)
     }
 
     /// Computes the L2 norm of this `vector`.
@@ -340,7 +347,41 @@ public extension LANumeric {
             return nil
         }
     }
-
+    
+    /// Computes the eigen decomposition of `A`. Here `A == A′` is assumed, and thus only the upper triangle part of `A` is used.
+    /// The eigen vectors of `A` are stored in `A` if successful, otherwise the resulting content of `A` is undefined.
+    /// - returns: `nil` if the decomposition failed, otherwise the eigenvalues of `A`
+    static func eigenDecomposition(_ A : inout Matrix<Self>) -> Vector<Magnitude>? {
+        var n = Int32(A.rows)
+        precondition(n == A.columns)
+        guard n > 0 else { return [] }
+        var jobz : Int8 = 0x56 /* "V" */
+        var uplo : Int8 = 0x55 /* "U" */
+        var lda = n
+        var w : [Magnitude] = Array(repeating: 0, count: Int(n))
+        var info : Int32 = 0
+        var lwork : Int32 = -1
+        asMutablePointer(&A.elements) { a in
+            asMutablePointer(&w) { w in
+                var workCount : Self = 0
+                let _ = lapack_heev(&jobz, &uplo, &n, a, &lda, w, &workCount, &lwork, &info)
+                guard info == 0 else { return }
+                var work = [Self](repeating: 0, count: workCount.toInt)
+                lwork = Int32(work.count)
+                let _ = lapack_heev(&jobz, &uplo, &n, a, &lda, w, &work, &lwork, &info)
+            }
+        }
+        if info == 0 {
+            return w
+        } else {
+            return nil
+        }
+    }
+    
+    /// Computes schur decomposition of `A`. The schur form is
+    static func schurDecomposition(_ A : Matrix<Self>) -> (schurForm : Matrix<Self>, schurVectors : Matrix<Self>)? {
+        fatalError()
+    }
 
 }
 
@@ -359,7 +400,6 @@ public extension Matrix where Element : Numeric {
     static func eye(_ m : Int, _ n : Int) -> Matrix {
         return Matrix(rows: m, columns: n, diagonal : [Element](repeating: 1, count: min(n, m)))
     }
-
 
 }
 
@@ -476,6 +516,12 @@ public extension Matrix where Element : LANumeric {
     
     func svd(left : SVDJob = .all, right : SVDJob = .all) -> (singularValues : Vector<Element.Magnitude>, left : Matrix, right : Matrix) {
         return Element.singularValueDecomposition(self, left: left, right: right)!
+    }
+    
+    func eigen() -> (eigenValues : Vector<Element.Magnitude>, eigenVectors : Matrix<Element>)? {
+        var A = self
+        guard let eigenValues = Element.eigenDecomposition(&A) else { return nil }
+        return (eigenValues: eigenValues, eigenVectors: A)
     }
     
     static func ∖ (lhs : Matrix, rhs : Matrix) -> Matrix {
