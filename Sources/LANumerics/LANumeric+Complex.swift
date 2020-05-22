@@ -270,18 +270,26 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
     
     public static func lapack_gees(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
-                                   _ w : UnsafeMutablePointer<Complex<Self.Magnitude>>,
+                                   _ wr : UnsafeMutablePointer<Self.Magnitude>,
+                                   _ wi : UnsafeMutablePointer<Self.Magnitude>,
                                    _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<Int32>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                                    _ info : UnsafeMutablePointer<Int32>) -> Int32
     {
-        var rwork : [Self.Magnitude] = Array(repeating: 0, count: Int(n.pointee))
+        let N = Int(n.pointee)
+        var rwork : [Self.Magnitude] = Array(repeating: 0, count: N)
         var sort : Int8 = 0x4E /* "N" */
         var sdim : Int32 = 0
-        return dispatch(
-            float: { cgees_(jobvs, &sort, nil, n, recast(a), lda , &sdim, recast(w), recast(vs), ldvs, recast(work), lwork, recast(&rwork), nil, info) },
-            double: { zgees_(jobvs, &sort, nil, n, recast(a), lda , &sdim, recast(w), recast(vs), ldvs, recast(work), lwork, recast(&rwork), nil, info) }
+        var w : [Self] = Array(repeating: 0, count: N)
+        let result = dispatch(
+            float: { cgees_(jobvs, &sort, nil, n, recast(a), lda , &sdim, recast(&w), recast(vs), ldvs, recast(work), lwork, recast(&rwork), nil, info) },
+            double: { zgees_(jobvs, &sort, nil, n, recast(a), lda , &sdim, recast(&w), recast(vs), ldvs, recast(work), lwork, recast(&rwork), nil, info) }
         )
+        for i in 0 ..< N {
+            wr[i] = w[i].real
+            wi[i] = w[i].imaginary
+        }
+        return result
     }
 
 }

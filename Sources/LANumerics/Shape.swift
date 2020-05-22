@@ -155,6 +155,31 @@ public extension Matrix {
         self = flatten(matrix)
     }
     
+    var isQuasiUpperTriangle : Bool {
+        let n = rows
+        for c in 0 ..< columns {
+            var r = c + 2
+            while r < n {
+                if self[r, c] != .zero { return false }
+                r += 1
+            }
+        }
+        return true
+    }
+
+    var isUpperTriangle : Bool {
+        let n = rows
+        for c in 0 ..< columns {
+            var r = c + 1
+            while r < n {
+                if self[r, c] != .zero { return false }
+                r += 1
+            }
+        }
+        return true
+    }
+
+    
 }
 
 public func flatten<E : MatrixElement>(_ matrix : BlockMatrix<E>) -> Matrix<E> {

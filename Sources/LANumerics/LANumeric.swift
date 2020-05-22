@@ -129,12 +129,13 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral wh
                             _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                             _ info : UnsafeMutablePointer<Int32>) -> Int32
     
-    static func lapack_gees<R>(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
-                               _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
-                               _ w : UnsafeMutablePointer<Complex<R>>,
-                               _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<Int32>,
-                               _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                               _ info : UnsafeMutablePointer<Int32>) -> Int32 where R == Self.Magnitude
+    static func lapack_gees(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
+                            _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                            _ wr : UnsafeMutablePointer<Self.Magnitude>,
+                            _ wi : UnsafeMutablePointer<Self.Magnitude>,
+                            _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<Int32>,
+                            _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
+                            _ info : UnsafeMutablePointer<Int32>) -> Int32
 
 }
 
@@ -393,6 +394,8 @@ public extension LANumeric {
         var jobvs : Int8 = 0x56 /* "V" */
         var lda = n
         var w : [Complex<R>] = Array(repeating: 0, count: Int(n))
+        var wr : [Self.Magnitude] = Array(repeating: 0, count: Int(n))
+        var wi : [Self.Magnitude] = Array(repeating: 0, count: Int(n))
         var info : Int32 = 0
         var lwork : Int32 = -1
         var vs = Matrix<Self>(rows: Int(n), columns: Int(n))
@@ -401,15 +404,18 @@ public extension LANumeric {
             asMutablePointer(&w) { w in
                 asMutablePointer(&vs.elements) { vs in
                     var workCount : Self = 0
-                    let _ = lapack_gees(&jobvs, &n, a, &lda, w, vs, &ldvs, &workCount, &lwork, &info)
+                    let _ = lapack_gees(&jobvs, &n, a, &lda, &wr, &wi, vs, &ldvs, &workCount, &lwork, &info)
                     guard info == 0 else { return }
                     var work = [Self](repeating: 0, count: workCount.toInt)
                     lwork = Int32(work.count)
-                    let _ = lapack_gees(&jobvs, &n, a, &lda, w, vs, &ldvs, &work, &lwork, &info)
+                    let _ = lapack_gees(&jobvs, &n, a, &lda, &wr, &wi, vs, &ldvs, &work, &lwork, &info)
                 }
             }
         }
         if info == 0 {
+            for i in 0 ..< A.rows {
+                w[i] = Complex(wr[i], wi[i])
+            }
             return (eigenValues: w, schurVectors : vs)
         } else {
             return nil

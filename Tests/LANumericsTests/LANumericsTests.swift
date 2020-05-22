@@ -611,14 +611,18 @@ final class LANumericsTests: XCTestCase {
             let B = schur.schurVectors
             XCTSame(B ′* B, .eye(n))
             XCTSame(B * D *′ B, A)
-            print("schur = \(schur.schurForm)")
+            if E.Magnitude.self == E.self {
+                XCTAssert(D.isQuasiUpperTriangle)
+            } else {
+                XCTAssert(D.isUpperTriangle)
+            }
         }
-        //stress {
+        stress {
             generic(Float.self)
             generic(Double.self)
             generic(Complex<Float>.self)
-            //generic(Complex<Double>.self)
-        //}
+            generic(Complex<Double>.self)
+        }
     }
 
 }
