@@ -46,7 +46,7 @@ public enum Transpose {
     }
 }
 
-public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral where Magnitude : LANumeric {
+public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral where Magnitude : LANumeric  {
         
     init(magnitude : Self.Magnitude)
 
@@ -128,6 +128,13 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral wh
                             _ w : UnsafeMutablePointer<Self.Magnitude>,
                             _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                             _ info : UnsafeMutablePointer<Int32>) -> Int32
+    
+    static func lapack_gees<R>(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
+                               _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                               _ w : UnsafeMutablePointer<Complex<R>>,
+                               _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<Int32>,
+                               _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
+                               _ info : UnsafeMutablePointer<Int32>) -> Int32 where R == Self.Magnitude
 
 }
 
@@ -379,8 +386,34 @@ public extension LANumeric {
     }
     
     /// Computes schur decomposition of `A`. The schur form is
-    static func schurDecomposition(_ A : Matrix<Self>) -> (schurForm : Matrix<Self>, schurVectors : Matrix<Self>)? {
-        fatalError()
+    static func schurDecomposition<R>(_ A : inout Matrix<Self>) -> (eigenValues : Vector<Complex<R>>, schurVectors : Matrix<Self>)? where R == Self.Magnitude {
+        var n = Int32(A.rows)
+        precondition(n == A.columns)
+        guard n > 0 else { return (eigenValues : [], schurVectors : Matrix()) }
+        var jobvs : Int8 = 0x56 /* "V" */
+        var lda = n
+        var w : [Complex<R>] = Array(repeating: 0, count: Int(n))
+        var info : Int32 = 0
+        var lwork : Int32 = -1
+        var vs = Matrix<Self>(rows: Int(n), columns: Int(n))
+        var ldvs = n
+        asMutablePointer(&A.elements) { a in
+            asMutablePointer(&w) { w in
+                asMutablePointer(&vs.elements) { vs in
+                    var workCount : Self = 0
+                    let _ = lapack_gees(&jobvs, &n, a, &lda, w, vs, &ldvs, &workCount, &lwork, &info)
+                    guard info == 0 else { return }
+                    var work = [Self](repeating: 0, count: workCount.toInt)
+                    lwork = Int32(work.count)
+                    let _ = lapack_gees(&jobvs, &n, a, &lda, w, vs, &ldvs, &work, &lwork, &info)
+                }
+            }
+        }
+        if info == 0 {
+            return (eigenValues: w, schurVectors : vs)
+        } else {
+            return nil
+        }
     }
 
 }
@@ -514,8 +547,8 @@ public extension Matrix where Element : LANumeric {
         return Element.solveLinearLeastSquares(self, transpose, Matrix(rhs))?.vector
     }
     
-    func svd(left : SVDJob = .all, right : SVDJob = .all) -> (singularValues : Vector<Element.Magnitude>, left : Matrix, right : Matrix) {
-        return Element.singularValueDecomposition(self, left: left, right: right)!
+    func svd(left : SVDJob = .all, right : SVDJob = .all) -> (singularValues : Vector<Element.Magnitude>, left : Matrix, right : Matrix)? {
+        return Element.singularValueDecomposition(self, left: left, right: right)
     }
     
     func eigen() -> (eigenValues : Vector<Element.Magnitude>, eigenVectors : Matrix<Element>)? {
@@ -524,6 +557,12 @@ public extension Matrix where Element : LANumeric {
         return (eigenValues: eigenValues, eigenVectors: A)
     }
     
+    func schur<R>() -> (eigenValues : Vector<Complex<R>>, schurForm : Matrix<Element>, schurVectors : Matrix<Element>)? where R == Element.Magnitude {
+        var A = self
+        guard let result = Element.schurDecomposition(&A) else { return nil }
+        return (eigenValues: result.eigenValues, schurForm: A, schurVectors: result.schurVectors)
+    }
+
     static func ∖ (lhs : Matrix, rhs : Matrix) -> Matrix {
         return lhs.solveLeastSquares(rhs)!
     }

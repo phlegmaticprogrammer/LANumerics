@@ -154,6 +154,7 @@ public extension Matrix {
         }
         self = flatten(matrix)
     }
+    
 }
 
 public func flatten<E : MatrixElement>(_ matrix : BlockMatrix<E>) -> Matrix<E> {

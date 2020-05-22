@@ -1,4 +1,5 @@
 import Accelerate
+import Numerics
 
 extension Float : LANumeric {
     
@@ -122,6 +123,26 @@ extension Float : LANumeric {
     {
         ssyev_(jobz, uplo, n, a, lda, w, work, lwork, info)
     }
+    
+    public static func lapack_gees(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                                   _ w : UnsafeMutablePointer<Complex<Self.Magnitude>>,
+                                   _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<Int32>,
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
+                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+    {
+        var sort : Int8 = 0x4E /* "N" */
+        let N = Int(n.pointee)
+        var wr : [Self] = Array(repeating: 0, count: N)
+        var wi : [Self] = Array(repeating: 0, count: N)
+        var sdim : Int32 = 0
+        let result = sgees_(jobvs, &sort, nil, n, a, lda , &sdim, &wr, &wi, vs, ldvs, work, lwork, nil, info)
+        for i in 0 ..< N {
+            w[i] = Complex(wr[i], wi[i])
+        }
+        return result
+    }
+
 
 
 }

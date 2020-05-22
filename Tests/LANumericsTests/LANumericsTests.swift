@@ -509,7 +509,7 @@ final class LANumericsTests: XCTestCase {
             let m = A.rows
             let n = A.columns
             let k = min(m, n)
-            let svd = A.svd()
+            let svd = A.svd()!
             XCTAssertEqual(svd.singularValues.count, k)
             XCTAssert(svd.left.hasDimensions(m, m))
             XCTAssert(svd.right.hasDimensions(n, n))
@@ -520,11 +520,11 @@ final class LANumericsTests: XCTestCase {
             }
             let D = Matrix<E>(rows: A.rows, columns: A.columns, diagonal: map(svd.singularValues))
             same(svd.left * D * svd.right, A)
-            let svdS = A.svd(left: .singular, right: .singular)
+            let svdS = A.svd(left: .singular, right: .singular)!
             same(Matrix(map(svd.singularValues)), Matrix(map(svdS.singularValues)))
             same(svd.left[0 ..< m, 0 ..< k], svdS.left)
             same(svd.right[0 ..< k, 0 ..< n], svdS.right)
-            let svdN = A.svd(left: .none, right: .none)
+            let svdN = A.svd(left: .none, right: .none)!
             same(Matrix(map(svd.singularValues)), Matrix(map(svdN.singularValues)))
             same(svd.left[0 ..< m, 0 ..< 0], svdN.left)
             same(svd.right[0 ..< 0, 0 ..< n], svdN.right)
@@ -600,6 +600,25 @@ final class LANumericsTests: XCTestCase {
             generic(Complex<Float>.self)
             generic(Complex<Double>.self)
         }
+    }
+
+    func testSchur() {
+        func generic<E : Num>(_ type : E.Type) where E.Magnitude : Real {
+            let n = Int.random(in: 0 ... 10)
+            let A : Matrix<E> = randomWholeMatrix(rows: n, columns: n)
+            let schur = A.schur()!
+            let D = schur.schurForm
+            let B = schur.schurVectors
+            XCTSame(B ′* B, .eye(n))
+            XCTSame(B * D *′ B, A)
+            print("schur = \(schur.schurForm)")
+        }
+        //stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            //generic(Complex<Double>.self)
+        //}
     }
 
 }
