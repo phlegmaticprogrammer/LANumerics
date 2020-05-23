@@ -71,6 +71,10 @@ extension Complex : ToStringWithPrecision {
             }
         )
     }
+    
+    public var description : String {
+        return toString(precision: nil)
+    }
 
 }
 

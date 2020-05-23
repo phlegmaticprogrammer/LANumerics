@@ -157,11 +157,11 @@ yields the output
 
 ## Matrix Arithmetic
 
-*LANumerics* supports common operations on matrices, among them:
+*LANumerics* supports common operations on matrices and vectors, among them:
 
 * `transpose` and `adjoint`
 * matrix multiplication
-* elementwise operations
+* vector products 
 
 In the following, assume the context
 ```swift
@@ -199,12 +199,55 @@ u.adjoint : 2x2-matrix:
 ⎛1.0    3.0       ⎞
 ⎝-2.0i  1.0 - 4.0i⎠
 ```
-The `adjoint` has the advantage over the `transpose` that many properties involving the adjoint generalise naturally from real matrices to complex matrices. Therefore there is the shortcut notation
-`u′` for `u.adjoint`. Note that `′` is the unicode character "Prime" `U+2032` (you can use for example [Ukelele](https://software.sil.org/ukelele/) to make the input of that character easier).
+The `adjoint` has the advantage over the `transpose` that many properties involving the adjoint generalize naturally from real matrices to complex matrices. Therefore there is the shortcut notation
+```swift
+u′
+```
+for `u.adjoint`. 
+
+Note that `′` is the unicode character "Prime" `U+2032`. You can use for example [Ukelele](https://software.sil.org/ukelele/) to make the input of that character smooth. Other alternatives are configuring the touchbar of your macbook, or
+using a configurable keyboard like [Stream Deck](https://www.elgato.com/en/gaming/stream-deck).
 
 ### Matrix Multiplication
 
-### Elementwise Operations
+Multiplying `u` and `v` is done via the expression `u * v`. Running `print("u * v: \(u * v)")` results in
+```
+u * v: 2x2-matrix:
+⎛1.0i  -2.0 + 2.0i⎞
+⎝3.0i  -3.0 + 5.0i⎠
+```
+
+Instead of `u′ * v` one can also use the equivalent, but usually faster expression `u ′* v`:
+```
+print("u′ * v: \(u′ * v)\n")
+print("u ′* v: \(u ′* v)\n")
+```
+yields
+```
+u′ * v: 2x2-matrix:
+⎛1.0i  3.0 + 3.0i⎞
+⎝2.0   5.0 - 3.0i⎠
+
+u ′* v: 2x2-matrix:
+⎛1.0i  3.0 + 3.0i⎞
+⎝2.0   5.0 - 3.0i⎠
+```
+Similarly, it is better to use `u *′ v` than `u * v′`, and `u ′*′ v` instead of `u′ * v′`.
+
+### Vector Products
+
+We will view `u` and `v` as vectors `u.vector` and `v.vector` now, where `.vector` corresponds to a [*column-major*](https://en.wikipedia.org/wiki/Row-_and_column-major_order) order of the matrix elements:
+```
+u.vector: [Complex<Float>(1.0, 0.0), Complex<Float>(3.0, 0.0), Complex<Float>(0.0, 2.0), Complex<Float>(1.0, 4.0)]
+v.vector: [Complex<Float>(0.0, 1.0), Complex<Float>(0.0, 0.0), Complex<Float>(0.0, 0.0), Complex<Float>(1.0, 1.0)]
+```
+
+The dot product of `u.vector` and `v.vector`  results in 
+```
+
+```
+
+
 
 ## Solving Linear Equations
 
