@@ -159,7 +159,7 @@ public extension LANumeric {
         return blas_nrm2(Int32(vector.count), vector, 1)
     }
 
-    /// Scales matrix `A` element-wise by `alpha` and stores the result in `A`.
+    /// Scales vector `A` element-wise by `alpha` and stores the result in `A`.
     static func scaleVector(_ alpha : Self, _ A : inout Vector<Self>) {
         let C = Int32(A.count)
         asMutablePointer(&A) { A in
@@ -167,7 +167,7 @@ public extension LANumeric {
         }
     }
 
-    /// Scales matrix `A` element-wise by `alpha`, scales matrix `B` element-wise by `beta`, and and stores the sum of the two scaled matrices in `B`.
+    /// Scales vector `A` element-wise by `alpha`, scales matrix `B` element-wise by `beta`, and and stores the sum of the two scaled matrices in `B`.
     static func scaleAndAddVectors(_ alpha : Self, _ A : Vector<Self>, _ beta : Self, _ B : inout Vector<Self>) {
         precondition(A.count == B.count)
         asMutablePointer(&B) { B in
@@ -438,6 +438,11 @@ infix operator ′*′ : MultiplicationPrecedence
 infix operator ∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
 infix operator ′∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
 
+infix operator .* : MultiplicationPrecedence
+infix operator ./ : MultiplicationPrecedence
+infix operator .- : AdditionPrecedence
+infix operator .+ : AdditionPrecedence
+
 public extension Matrix where Element : Numeric {
     
     static func eye(_ m : Int) -> Matrix {
@@ -539,7 +544,27 @@ public extension Matrix where Element : LANumeric {
         A *= left
         return A
     }
-        
+    
+    static func .+(left : Matrix, right : Matrix) -> Matrix {
+        return left + right
+    }
+
+    static func .-(left : Matrix, right : Matrix) -> Matrix {
+        return left - right
+    }
+
+    static func .*(left : Matrix, right : Matrix) -> Matrix {
+        precondition(left.hasSameDimensions(right))
+        let elems = Element.vDSP_elementwise_multiply(left.elements, right.elements)
+        return Matrix(rows: left.rows, columns: left.columns, elements: elems)
+    }
+
+    static func ./(left : Matrix, right : Matrix) -> Matrix {
+        precondition(left.hasSameDimensions(right))
+        let elems = Element.vDSP_elementwise_divide(left.elements, right.elements)
+        return Matrix(rows: left.rows, columns: left.columns, elements: elems)
+    }
+
     func solve(_ rhs : Matrix) -> Matrix? {
         var B = rhs
         if Element.solveLinearEquations(self, &B) {
@@ -592,6 +617,7 @@ public extension Matrix where Element : LANumeric {
     static func ′∖ (lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
         return lhs.solveLeastSquares(transpose: .adjoint, rhs)!
     }
+
 }
 
 public func * <Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Element {
@@ -607,4 +633,31 @@ public func *′ <Element : LANumeric>(left : Vector<Element>, right : Vector<El
     Element.vectorAdjointVectorProduct(1, left, right, &A)
     return A
 }
+
+public postfix func ′<Element : LANumeric>(vector : Vector<Element>) -> Matrix<Element> {
+    return Matrix(row: Element.vDSP_elementwise_adjoint(vector))
+}
+
+public func .+<Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Vector<Element> {
+    var B = right
+    Element.scaleAndAddVectors(1, left, 1, &B)
+    return B
+}
+
+public func .-<Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Vector<Element> {
+    var B = right
+    Element.scaleAndAddVectors(1, left, -1, &B)
+    return B
+}
+
+public func .*<Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Vector<Element> {
+    return Element.vDSP_elementwise_multiply(left, right)
+}
+
+public func ./<Element : LANumeric>(left : Vector<Element>, right : Vector<Element>) -> Vector<Element> {
+    return Element.vDSP_elementwise_divide(left, right)
+}
+
+
+
 

@@ -707,5 +707,30 @@ final class LANumericsTests: XCTestCase {
             generic(Complex<Double>.self)
         }
     }
+    
+    func test_vDSP_elementwise_operators() {
+        func generic<E : Num>(_ type : E.Type) {
+            let u : [E] = randomWholeVector()
+            let v : [E] = randomWholeVector(count: u.count).map { x in x == 0 ? 1 : x }
+            let u_plus_v = zip(u, v).map { x, y in x + y }
+            XCTAssertEqual(u .+ v, u_plus_v)
+            XCTAssertEqual(Matrix(u) .+ Matrix(v), Matrix(u_plus_v))
+            let u_minus_v = zip(u, v).map { x, y in x - y }
+            XCTAssertEqual(u .- v, u_minus_v)
+            XCTAssertEqual(Matrix(u) .- Matrix(v), Matrix(u_minus_v))
+            let u_times_v = zip(u, v).map { x, y in x * y }
+            XCTAssertEqual(u .* v, u_times_v)
+            XCTAssertEqual(Matrix(u) .* Matrix(v), Matrix(u_times_v))
+            let u_div_v = zip(u, v).map { x, y in x / y }
+            XCTSame(u ./ v, u_div_v)
+            XCTSame(Matrix(u) ./ Matrix(v), Matrix(u_div_v))
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
 
 }
