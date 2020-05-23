@@ -9,8 +9,23 @@ License: MIT License
 The package depends on [Swift Numerics](https://github.com/apple/swift-numerics), as it supports both **real** and **complex** numerics for both `Float` and `Double` precision in a uniform way. 
 Under the hood it relies on the [`Accelerate`](https://developer.apple.com/documentation/accelerate) framework for most of its functionality, in particular `BLAS` and `LAPACK`, and also `vDSP`.
 
+## Table of Contents
+
+* [Usage](#usage)
+* [LANumeric](#lanumeric)
+* [Constructing Matrices](#constructing-matrices)
+* [SIMD Support](#simd-support)
+* [Matrix Arithmetic](#matrix-arithmetic)
+* [Solving Linear Equations](#solving-linear-equations)
+* [Matrix Decompositions](#matrix-decompositions)
+
+Complete documentation of the *LANumerics* API will eventually become available, but this is, just like the package itself, still work in progress. 
+If you feel like experimenting and exploring more of the currently available functionality, examining the [current tests](https://github.com/phlegmaticprogrammer/LANumerics/tree/master/Tests/LANumericsTests) should provide a good starting point.
+
+---
+
 ## Usage
-*LANumerics* is a normal Swift package and can be added to your App [in the usual way](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app).
+*LANumerics* is a normal Swift package and can be added to your app [in the usual way](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app).
 After adding it to your app, import `LANumerics` (and also `Numerics` if you use complex numbers). 
 
 You can try out if everything works fine by running
@@ -275,6 +290,14 @@ Matrix(u.vector) * v.vector′: 4x4-matrix:
 
 ### Element-wise Operations
 
+Element-wise binary operations like `.+`, `.-`, `.*` and `./` are supported on both vectors and matrices, for example:
+
+```
+u .* v : 2x2-matrix:
+⎛1.0i  0.0        ⎞
+⎝0.0   -3.0 + 5.0i⎠
+```
+
 ### Functional Operations
 
 The `Matrix` type supports functional operations like `map`, `fold` and `combine`. These come in handy when performance is not that important, and there is no accelerated equivalent available (yet?).
@@ -287,9 +310,3 @@ results in the value `4`.
 ## Solving Linear Equations
 
 ## Matrix Decompositions
-
-## More
-
-Complete documentation of the *LANumerics* API will eventually become available, but this is, just like the package itself, still work in progress. 
-If you feel like experimenting and exploring more of the currently available functionality, examining the [current tests](https://github.com/phlegmaticprogrammer/LANumerics/tree/master/Tests/LANumericsTests) should provide a good starting point.
-
