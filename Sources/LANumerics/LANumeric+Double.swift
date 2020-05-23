@@ -156,4 +156,11 @@ extension Double : LANumeric {
         return result
     }
 
+    public static func vDSP_elementwise_divide(_ u : [Self], _ v : [Self]) -> [Self] {
+        let N = u.count
+        precondition(N == v.count)
+        var result : [Self] = Array(repeating: 0, count: N)
+        vDSP_vdivD(v, 1, u, 1, &result, 1, vDSP_Length(N))
+        return result
+    }
 }

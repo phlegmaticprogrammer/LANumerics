@@ -400,9 +400,30 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
         )
         return vDSP_convert(real: target_real, imaginary: target_imaginary)
     }
-
-
-
+    
+    public static func vDSP_elementwise_divide(_ u : [Self], _ v : [Self]) -> [Self] {
+        let N = u.count
+        precondition(N == v.count)
+        var (real_u, imaginary_u) = vDSP_convert(interleavedComplex: u)
+        var (real_v, imaginary_v) = vDSP_convert(interleavedComplex: v)
+        var target_real : [Self.Magnitude] = Array(repeating: 0, count: N)
+        var target_imaginary : [Self.Magnitude] = Array(repeating: 0, count: N)
+        dispatch(
+            float: {
+                var split_u = DSPSplitComplex(realp: recast(&real_u), imagp: recast(&imaginary_u))
+                var split_v = DSPSplitComplex(realp: recast(&real_v), imagp: recast(&imaginary_v))
+                var target_split = DSPSplitComplex(realp: recast(&target_real), imagp: recast(&target_imaginary))
+                vDSP_zvdiv(&split_v, 1, &split_u, 1, &target_split, 1, vDSP_Length(N))
+            },
+            double: {
+                var split_u = DSPDoubleSplitComplex(realp: recast(&real_u), imagp: recast(&imaginary_u))
+                var split_v = DSPDoubleSplitComplex(realp: recast(&real_v), imagp: recast(&imaginary_v))
+                var target_split = DSPDoubleSplitComplex(realp: recast(&target_real), imagp: recast(&target_imaginary))
+                vDSP_zvdivD(&split_v, 1, &split_u, 1, &target_split, 1, vDSP_Length(N))
+            }
+        )
+        return vDSP_convert(real: target_real, imaginary: target_imaginary)
+    }
 
 }
 

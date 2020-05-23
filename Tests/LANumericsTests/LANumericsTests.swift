@@ -691,5 +691,21 @@ final class LANumericsTests: XCTestCase {
             generic(Complex<Double>.self)
         }
     }
-    
+
+    func test_vDSP_elementwise_divide() {
+        func generic<E : Num>(_ type : E.Type) {
+            let u : [E] = randomWholeVector()
+            let v : [E] = randomWholeVector(count: u.count).map { x in x == 0 ? 1 : x }
+            let result = E.vDSP_elementwise_divide(u, v)
+            let predicted = zip(u, v).map { x, y in x / y }
+            XCTSame(result, predicted)
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
+
 }
