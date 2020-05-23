@@ -7,11 +7,29 @@ License: MIT License
 *LANumerics* is a Swift package for doing *numerical linear algebra* in Swift. 
 
 The package depends on [Swift Numerics](https://github.com/apple/swift-numerics), as it supports both **real** and **complex** numerics for both `Float` and `Double` precision in a uniform way. 
-Under the hood it relies on the `Accelerate` framework for most of its functionality, in particular `BLAS` and `LAPACK`, and also `vDSP`.
+Under the hood it relies on the [`Accelerate`](https://developer.apple.com/documentation/accelerate) framework for most of its functionality, in particular `BLAS` and `LAPACK`, and also `vDSP`.
 
 ## Usage
 *LANumerics* is a normal Swift package and can be added to your App [in the usual way](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app).
 After adding it to your app, import `LANumerics` (and also `Numerics` if you use complex numbers). 
+
+You can try out if everything works fine by running
+
+```
+import LANumerics
+let A : Matrix<Float> = Matrix(columns: [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
+print("A: \(A)")
+```
+
+which should output something like
+
+```
+A: 4x3-matrix:
+⎛1.0  5.0  9.0 ⎞
+⎜2.0  6.0  10.0⎟
+⎜3.0  7.0  11.0⎟
+⎝4.0  8.0  12.0⎠
+```
 
 ## LANumeric
 
@@ -22,14 +40,64 @@ The `LANumeric` protocol denotes the type of numbers on which *LANumerics* opera
 *  `Complex<Float>`
 *  `Complex<Double>`
 
-Most functionality of *LANumerics* is generic in `LANumeric`. Examples are solving a system of linear equations or computing the singular value decomposition of a matrix.
+Most functionality of *LANumerics* is generic in `LANumeric`, e.g. solving a system of linear equations or computing the singular value decomposition of a matrix.
 
-## Matrices
+## Constructing Vectors and Matrices
 
-The main work horse data type of *LANumerics* is the `Matrix`. For convenience there is also the `Vector`, but this is just a typealias for normal Swift arrays.
+The main work horse of *LANumerics* is the `Matrix` type. For convenience there is also a `Vector` type, but this is just a typealias for normal Swift arrays.
+
+The expression `Matrix([1,2,3])` constructs the matrix:
+```
+3x1-matrix:
+⎛1.0⎞
+⎜2.0⎟
+⎝3.0⎠
+```
+The expression `Matrix(row: [1, 2, 3])` constructs the matrix:
+```
+1x3-matrix:
+(1.0  2.0  3.0)
+```
+The expression `Matrix<Float>(rows: 2, columns: 3)` constructs a matrix consisting only of zeros:
+```
+2x3-matrix:
+⎛0.0  0.0  0.0⎞
+⎝0.0  0.0  0.0⎠
+```
+The expression `Matrix(repeating: 1, rows: 2, columns: 3)` constructs a matrix consisting only of ones:
+```
+2x3-matrix:
+⎛1.0  1.0  1.0⎞
+⎝1.0  1.0  1.0⎠
+```
+Given the two vectors `v1` and `v2`
+```
+let v1 : Vector<Float> = [1, 2, 3]
+let v2 : Vector<Float> = [4, 5, 6]
+```
+we can create a matrix from columns `Matrix(columns: [v1, v2])`:
+```
+3x2-matrix:
+⎛1.0  4.0⎞
+⎜2.0  5.0⎟
+⎝3.0  6.0⎠
+```
+or rows `Matrix(rows: [v1, v2])`:
+```
+2x3-matrix:
+⎛1.0  2.0  3.0⎞
+⎝4.0  5.0  6.0⎠
+```
+It is also legal to create matrices with zero columns and/or rows, like `Matrix(rows: 2, columns: 0)` or `Matrix(rows: 0, columns: 0)`.
+
+## SIMD support
 
 ## Solving Linear Equations
 
 ## Matrix Decompositions
 
-## SIMD support
+## More
+
+Complete documentation of the `LANumerics` API will eventually become available, but this is, just like the package itself, still work in progress. 
+If you feel like experimenting and exploring more of the currently available functionality, examining the [current tests](https://github.com/phlegmaticprogrammer/LANumerics/tree/master/Tests/LANumericsTests) should provide a good starting point.
+
