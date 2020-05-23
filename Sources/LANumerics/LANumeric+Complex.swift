@@ -6,6 +6,16 @@ fileprivate func recast<U, V>(_ ptr : UnsafeMutablePointer<U>) -> UnsafeMutableP
     return p.assumingMemoryBound(to: V.self)
 }
 
+fileprivate func recast<U, V>(_ ptr : UnsafePointer<U>) -> UnsafePointer<V> {
+    let p = UnsafeRawPointer(ptr)
+    return p.assumingMemoryBound(to: V.self)
+}
+
+fileprivate func upcast<U, V>(_ ptr : UnsafeMutablePointer<U>) -> UnsafePointer<V> {
+    let p = UnsafeRawPointer(ptr)
+    return p.assumingMemoryBound(to: V.self)
+}
+
 extension Complex {
     
     static func dispatch<R>(float : () -> R, double : () -> R) -> R {
@@ -291,6 +301,62 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
         }
         return result
     }
+    
+    public static func vDSP_convert(interleavedComplex : [Self]) -> (real: [Self.Magnitude], imaginary: [Self.Magnitude]) {
+        let N = vDSP_Length(interleavedComplex.count)
+        var real: [Self.Magnitude] = Array(repeating: 0, count: Int(N))
+        var imaginary: [Self.Magnitude] = Array(repeating: 0, count: Int(N))
+        dispatch(
+            float: {
+                var split = DSPSplitComplex(realp: recast(&real), imagp: recast(&imaginary))
+                vDSP_ctoz(recast(interleavedComplex), 2, &split, 1, N)
+            },
+            double: {
+                var split = DSPDoubleSplitComplex(realp: recast(&real), imagp: recast(&imaginary))
+                vDSP_ctozD(recast(interleavedComplex), 2, &split, 1, N)
+            }
+        )
+        return (real: real, imaginary: imaginary)
+    }
+    
+    public static func vDSP_convert(real: [Self.Magnitude], imaginary: [Self.Magnitude]) -> [Self] {
+        precondition(real.count == imaginary.count)
+        let N = vDSP_Length(real.count)
+        var result : [Self] = Array(repeating: 0, count: Int(N))
+        dispatch(
+            float: {
+                var real = real
+                var imaginary = imaginary
+                var split = DSPSplitComplex(realp: recast(&real), imagp: recast(&imaginary))
+                vDSP_ztoc(&split, 1, recast(&result), 2, N)
+            },
+            double: {
+                var real = real
+                var imaginary = imaginary
+                var split = DSPDoubleSplitComplex(realp: recast(&real), imagp: recast(&imaginary))
+                vDSP_ztocD(&split, 1, recast(&result), 2, N)
+            }
+        )
+        return result
+    }
+    
+    public static func vDSP_absolute(_ v : [Self]) -> [Self.Magnitude] {
+        var (real, imaginary) = vDSP_convert(interleavedComplex: v)
+        let N = vDSP_Length(v.count)
+        var result: [Self.Magnitude] = Array(repeating: 0, count: Int(N))
+        dispatch (
+            float: {
+                var split = DSPSplitComplex(realp: recast(&real), imagp: recast(&imaginary))
+                vDSP_zvabs(&split, 1, recast(&result), 1, N)
+            },
+            double: {
+                var split = DSPDoubleSplitComplex(realp: recast(&real), imagp: recast(&imaginary))
+                vDSP_zvabsD(&split, 1, recast(&result), 1, N)
+            }
+        )
+        return result
+    }
+
 
 }
 

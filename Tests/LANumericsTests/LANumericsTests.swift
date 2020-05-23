@@ -175,6 +175,10 @@ final class LANumericsTests: XCTestCase {
         XCTAssert(norm < e, "norm is \(norm), X = \(X), Y = \(Y)")
     }
 
+    func XCTSame<E : Num>(_ X : Vector<E>, _ Y : Vector<E>) {
+        XCTSame(Matrix(X), Matrix(Y))
+    }
+    
     func testScale() {
         func generic<E : Num>(_ type : E.Type) {
             var X : Vector<E> = randomWholeVector()
@@ -624,5 +628,39 @@ final class LANumericsTests: XCTestCase {
             generic(Complex<Double>.self)
         }
     }
-
+    
+    func test_vDSP_convert() {
+        func generic<R : Real & LANumeric>(_ type : R.Type) {
+            let v : Vector<Complex<R>> = randomWholeVector()
+            let real = v.map { x in x.real }
+            let imaginary = v.map { x in x.imaginary }
+            let split = Complex<R>.vDSP_convert(interleavedComplex: v)
+            XCTAssertEqual(real, split.real)
+            XCTAssertEqual(imaginary, split.imaginary)
+            let u = Complex<R>.vDSP_convert(real: real, imaginary: imaginary)
+            XCTAssertEqual(u, v)
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+        }
+    }
+    
+    func test_vDSP_absolute() {
+        func generic<E : Num>(_ type : E.Type) {
+            let v : [E] = randomWholeVector()
+            let abs = E.vDSP_absolute(v)
+            let vabs = v.map { x in x.length }
+            print("v = \(v)")
+            print("abs = \(abs)")
+            XCTSame(abs, vabs)
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
+    
 }

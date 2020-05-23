@@ -136,6 +136,13 @@ extension Float : LANumeric {
         var sdim : Int32 = 0
         return sgees_(jobvs, &sort, nil, n, a, lda , &sdim, wr, wi, vs, ldvs, work, lwork, nil, info)
     }
+    
+    public static func vDSP_absolute(_ v : [Self]) -> [Self.Magnitude] {
+        var result : [Self] = Array(repeating: 0, count: v.count)
+        vDSP_vabs(v, 1, &result, 1, vDSP_Length(v.count))
+        return result
+    }
+
 
 
 
