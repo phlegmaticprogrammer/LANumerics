@@ -36,25 +36,37 @@ extension Complex : ToStringWithPrecision {
     public func toString(precision : Int?) -> String {
         return Complex.dispatch(
             float: {
-                let x = (real as! Float).toString(precision: precision)
-                let y = (imaginary as! Float).toString(precision: precision)
                 if imaginary.isZero {
+                    let x = (real as! Float).toString(precision: precision)
                     return x
                 } else if real.isZero {
+                    let y = (imaginary as! Float).toString(precision: precision)
                     return "\(y)i"
-                } else {
+                } else if imaginary > 0 {
+                    let x = (real as! Float).toString(precision: precision)
+                    let y = (imaginary as! Float).toString(precision: precision)
                     return "\(x) + \(y)i"
+                } else {
+                    let x = (real as! Float).toString(precision: precision)
+                    let y = (-imaginary as! Float).toString(precision: precision)
+                    return "\(x) - \(y)i"
                 }
             },
             double: {
-                let x = (real as! Double).toString(precision: precision)
-                let y = (imaginary as! Double).toString(precision: precision)
                 if imaginary.isZero {
+                    let x = (real as! Double).toString(precision: precision)
                     return x
                 } else if real.isZero {
+                    let y = (imaginary as! Double).toString(precision: precision)
                     return "\(y)i"
-                } else {
+                } else if imaginary > 0 {
+                    let x = (real as! Double).toString(precision: precision)
+                    let y = (imaginary as! Double).toString(precision: precision)
                     return "\(x) + \(y)i"
+                } else {
+                    let x = (real as! Double).toString(precision: precision)
+                    let y = (-imaginary as! Double).toString(precision: precision)
+                    return "\(x) - \(y)i"
                 }
             }
         )
