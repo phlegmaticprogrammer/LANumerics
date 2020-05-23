@@ -9,7 +9,7 @@ public protocol ToStringWithPrecision {
 
 extension Float : ToStringWithPrecision {
         
-    public func toString(precision : Int?) -> String {
+    public func toString(precision : Int? = nil) -> String {
         if let precision = precision {
             return String(format: "%.\(precision)f", self)
         } else {
@@ -21,7 +21,7 @@ extension Float : ToStringWithPrecision {
 
 extension Double : ToStringWithPrecision {
         
-    public func toString(precision : Int?) -> String {
+    public func toString(precision : Int? = nil) -> String {
         if let precision = precision {
             return String(format: "%.\(precision)f", self)
         } else {
@@ -33,7 +33,7 @@ extension Double : ToStringWithPrecision {
 
 extension Complex : ToStringWithPrecision {
     
-    public func toString(precision : Int?) -> String {
+    public func toString(precision : Int? = nil) -> String {
         return Complex.dispatch(
             float: {
                 if imaginary.isZero {
