@@ -4,7 +4,7 @@ Copyright (c) 2020 Steven Obua
 
 License: MIT License
 
-*LANumerics* is a Swift package for doing *numerical linear algebra* in Swift. 
+*LANumerics* is a Swift package for doing *numerical linear algebra*. 
 
 The package depends on [Swift Numerics](https://github.com/apple/swift-numerics), as it supports both **real** and **complex** numerics for both `Float` and `Double` precision in a uniform way. 
 Under the hood it relies on the [`Accelerate`](https://developer.apple.com/documentation/accelerate) framework for most of its functionality, in particular `BLAS` and `LAPACK`, and also `vDSP`.
@@ -92,7 +92,7 @@ It is also legal to create matrices with zero columns and/or rows, like `Matrix(
 
 ## SIMD Support
 
-Swift supports `simd` vector and matrix operations. *LANumerics* plays nice with `simd` by providing conversion functions to and from `simd` matrices. For example,
+Swift supports `simd` vector and matrix operations. *LANumerics* plays nice with `simd` by providing conversion functions to and from `simd` vectors and matrices. For example,
 ```
 import simd
 import LANumerics
