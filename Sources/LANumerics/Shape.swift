@@ -12,7 +12,7 @@ public typealias BlockMatrix<Element : MatrixElement> = Matrix<Matrix<Element>>
 
 public extension Matrix {
     
-    mutating func transposeInPlace() {
+    internal mutating func transposeInPlace() {
         if _rows > 1 && _columns > 1 {
             var transposedElements = elements
             asPointer(elements) { elements in
@@ -37,7 +37,7 @@ public extension Matrix {
         return m
     }
         
-    mutating func adjointInPlace() {
+    internal mutating func adjointInPlace() {
         var transposedElements = elements
         asPointer(elements) { elements in
             asMutablePointer(&transposedElements) { transposedElements in
