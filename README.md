@@ -162,6 +162,8 @@ yields the output
 * `transpose` and `adjoint`
 * matrix multiplication
 * vector products 
+* element-wise operations
+* functional operations
 
 In the following, assume the context
 ```swift
@@ -270,6 +272,17 @@ Matrix(u.vector) * v.vector′: 4x4-matrix:
 ⎜2.0         0.0  0.0  2.0 + 2.0i⎟
 ⎝4.0 - 1.0i  0.0  0.0  5.0 + 3.0i⎠
 ```
+
+### Element-wise Operations
+
+### Functional Operations
+
+The `Matrix` type supports functional operations like `map`, `fold` and `combine`. These come in handy when performance is not that important, and there is no accelerated equivalent available (yet?).
+For example, the expression
+```swift
+u.fold(0) { x, y in max(x, y.magnitude) }
+```
+results in the value `4`.
 
 ## Solving Linear Equations
 
