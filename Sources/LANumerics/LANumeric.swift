@@ -141,9 +141,11 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral wh
     
     static func vDSP_elementwise_adjoint(_ v : [Self]) -> [Self]
     
-    /*static func elementwise_multiply(_ u : [Self], _ v : [Self]) -> [Self]
+    static func vDSP_elementwise_multiply(_ u : [Self], _ v : [Self]) -> [Self]
     
-    static func elementwise_divide(_ u : [Self], _ v : [Self]) -> [Self]*/
+    //static func vDSP_elementwise_divide(_ u : [Self], _ v : [Self]) -> [Self]
+    
+    //static func vDSP_elementwise_divide(_ s : Self, _ v : [Self]) -> [Self]
 
 }
 

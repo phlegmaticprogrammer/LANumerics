@@ -676,5 +676,20 @@ final class LANumericsTests: XCTestCase {
         }
     }
 
+    func test_vDSP_elementwise_multiply() {
+        func generic<E : Num>(_ type : E.Type) {
+            let u : [E] = randomWholeVector()
+            let v : [E] = randomWholeVector(count: u.count)
+            let result = E.vDSP_elementwise_multiply(u, v)
+            let predicted = zip(u, v).map { x, y in x * y }
+            XCTSame(result, predicted)
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
     
 }

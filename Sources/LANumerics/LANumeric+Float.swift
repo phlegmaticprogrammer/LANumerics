@@ -138,13 +138,21 @@ extension Float : LANumeric {
     }
     
     public static func vDSP_elementwise_absolute(_ v : [Self]) -> [Self.Magnitude] {
-        var result : [Self] = Array(repeating: 0, count: v.count)
+        var result : [Self.Magnitude] = Array(repeating: 0, count: v.count)
         vDSP_vabs(v, 1, &result, 1, vDSP_Length(v.count))
         return result
     }
 
     public static func vDSP_elementwise_adjoint(_ v : [Self]) -> [Self] {
         return v
+    }
+    
+    public static func vDSP_elementwise_multiply(_ u : [Self], _ v : [Self]) -> [Self] {
+        let N = u.count
+        precondition(N == v.count)
+        var result : [Self] = Array(repeating: 0, count: N)
+        vDSP_vmul(u, 1, v, 1, &result, 1, vDSP_Length(N))
+        return result
     }
 
 }
