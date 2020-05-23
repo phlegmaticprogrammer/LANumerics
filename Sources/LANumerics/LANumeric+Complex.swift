@@ -340,7 +340,7 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
         return result
     }
     
-    public static func vDSP_absolute(_ v : [Self]) -> [Self.Magnitude] {
+    public static func vDSP_elementwise_absolute(_ v : [Self]) -> [Self.Magnitude] {
         var (real, imaginary) = vDSP_convert(interleavedComplex: v)
         let N = vDSP_Length(v.count)
         var result: [Self.Magnitude] = Array(repeating: 0, count: Int(N))
@@ -356,6 +356,27 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
         )
         return result
     }
+    
+    public static func vDSP_elementwise_adjoint(_ v : [Self]) -> [Self] {
+        var (real, imaginary) = vDSP_convert(interleavedComplex: v)
+        let N = vDSP_Length(v.count)
+        var target_real : [Self.Magnitude] = Array(repeating: 0, count: Int(N))
+        var target_imaginary : [Self.Magnitude] = Array(repeating: 0, count: Int(N))
+        dispatch(
+            float: {
+                var source_split = DSPSplitComplex(realp: recast(&real), imagp: recast(&imaginary))
+                var target_split = DSPSplitComplex(realp: recast(&target_real), imagp: recast(&target_imaginary))
+                vDSP_zvconj(&source_split, 1, &target_split, 1, N)
+            },
+            double: {
+                var source_split = DSPDoubleSplitComplex(realp: recast(&real), imagp: recast(&imaginary))
+                var target_split = DSPDoubleSplitComplex(realp: recast(&target_real), imagp: recast(&target_imaginary))
+                vDSP_zvconjD(&source_split, 1, &target_split, 1, N)
+            }
+        )
+        return vDSP_convert(real: target_real, imaginary: target_imaginary)
+    }
+
 
 
 }

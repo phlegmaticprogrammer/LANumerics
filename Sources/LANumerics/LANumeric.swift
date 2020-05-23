@@ -137,11 +137,11 @@ public protocol LANumeric : MatrixElement, Numeric, ExpressibleByFloatLiteral wh
                             _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
                             _ info : UnsafeMutablePointer<Int32>) -> Int32
     
-    static func vDSP_absolute(_ v : [Self]) -> [Self.Magnitude]
+    static func vDSP_elementwise_absolute(_ v : [Self]) -> [Self.Magnitude]
     
-/*    static func elementwise_adjoint(_ v : [Self]) -> [Self]
+    static func vDSP_elementwise_adjoint(_ v : [Self]) -> [Self]
     
-    static func elementwise_multiply(_ u : [Self], _ v : [Self]) -> [Self]
+    /*static func elementwise_multiply(_ u : [Self], _ v : [Self]) -> [Self]
     
     static func elementwise_divide(_ u : [Self], _ v : [Self]) -> [Self]*/
 

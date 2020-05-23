@@ -646,13 +646,11 @@ final class LANumericsTests: XCTestCase {
         }
     }
     
-    func test_vDSP_absolute() {
+    func test_vDSP_elementwise_absolute() {
         func generic<E : Num>(_ type : E.Type) {
             let v : [E] = randomWholeVector()
-            let abs = E.vDSP_absolute(v)
+            let abs = E.vDSP_elementwise_absolute(v)
             let vabs = v.map { x in x.length }
-            print("v = \(v)")
-            print("abs = \(abs)")
             XCTSame(abs, vabs)
         }
         stress {
@@ -662,5 +660,21 @@ final class LANumericsTests: XCTestCase {
             generic(Complex<Double>.self)
         }
     }
+    
+    func test_vDSP_elementwise_adjoint() {
+        func generic<E : Num>(_ type : E.Type) {
+            let v : [E] = randomWholeVector()
+            let abs = E.vDSP_elementwise_adjoint(v)
+            let vabs = v.map { x in x.adjoint }
+            XCTSame(abs, vabs)
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
+
     
 }
