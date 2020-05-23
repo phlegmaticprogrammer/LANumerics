@@ -119,6 +119,34 @@ Note that `simd` reverses the role of row and column indices compared to `LANume
 
 ## Accessing Matrix Elements and Submatrices
 
+Matrix elements and submatrices can be accessed using familiar notation:
+```
+import simd
+import LANumerics
+
+var m = Matrix(rows: [[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+print(m)
+m[2, 1] = 0
+print(m)
+m[0 ... 1, 0 ... 1] = m[1 ... 2, 1 ... 2]
+print(m)
+```
+yields the output
+```
+3x3-matrix:
+⎛1.0  2.0  3.0⎞
+⎜4.0  5.0  6.0⎟
+⎝7.0  8.0  9.0⎠
+3x3-matrix:
+⎛1.0  2.0  3.0⎞
+⎜4.0  5.0  6.0⎟
+⎝7.0  0.0  9.0⎠
+3x3-matrix:
+⎛5.0  6.0  3.0⎞
+⎜0.0  9.0  6.0⎟
+⎝7.0  0.0  9.0⎠
+```
+
 ## Matrix Arithmetic
 
 *LANumerics* supports common operations on matrices, among them:
@@ -127,12 +155,20 @@ Note that `simd` reverses the role of row and column indices compared to `LANume
 * matrix multiplication
 * elementwise operations
 
+In the following, assume 
+`let u = Matrix<Float>(rows: [[1, 2, 3], [4, 5, 6], [7, 8, 9]])`
+and 
+`let v = `
+such that 
+`print("u: \(u)")`
+
 ### Transpose and Adjoint
+
+
 
 ### Matrix Multiplication
 
 ### Elementwise Operations
-
 
 ## Solving Linear Equations
 
