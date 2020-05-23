@@ -115,6 +115,7 @@ as simd: simd_double3x2(columns: (SIMD2<Double>(1.0, 4.0), SIMD2<Double>(2.0, 5.
 ------------
 true
 ```
+Note that `simd` reverses the role of row and column indices compared to `LANumerics` (and usual mathematical convention).
 
 ## Accessing Matrix Elements and Submatrices
 
