@@ -252,8 +252,7 @@ u.vector ′* v.vector: 5.0 - 2.0i
 ```
 which corresponds to 
 ```
-u.vector′ * v.vector: 1x1-matrix:
-(5.0 - 2.0i)
+u.vector′ * v.vector: [Complex<Float>(5.0, -2.0)]
 ```
 Furthermore, there is 
 ```
