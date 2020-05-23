@@ -72,10 +72,6 @@ extension Complex : ToStringWithPrecision {
         )
     }
     
-    public var description : String {
-        return toString(precision: nil)
-    }
-
 }
 
 extension Matrix : ToStringWithPrecision, CustomStringConvertible where Element : ToStringWithPrecision {
