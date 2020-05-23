@@ -42,7 +42,7 @@ The `LANumeric` protocol denotes the type of numbers on which *LANumerics* opera
 
 Most functionality of *LANumerics* is generic in `LANumeric`, e.g. solving a system of linear equations or computing the singular value decomposition of a matrix.
 
-## Constructing Vectors and Matrices
+## Constructing Matrices
 
 The main work horse of *LANumerics* is the `Matrix` type. For convenience there is also a `Vector` type, but this is just a typealias for normal Swift arrays.
 
@@ -90,7 +90,48 @@ or rows `Matrix(rows: [v1, v2])`:
 ```
 It is also legal to create matrices with zero columns and/or rows, like `Matrix(rows: 2, columns: 0)` or `Matrix(rows: 0, columns: 0)`.
 
-## SIMD support
+## SIMD Support
+
+Swift supports `simd` vector and matrix operations. *LANumerics* plays nice with `simd` by providing conversion functions to and from `simd` matrices. For example,
+```
+import simd
+import LANumerics
+
+let m = Matrix(rows: [[1, 2, 3], [4, 5, 6]])
+print("m: \(m)")
+let s = m.simd3x2
+print("------------")
+print("as simd: \(s)")
+print("------------")
+print(Matrix(s) == m)
+```
+results in the output 
+```
+m: 2x3-matrix:
+⎛1.0  2.0  3.0⎞
+⎝4.0  5.0  6.0⎠
+------------
+as simd: simd_double3x2(columns: (SIMD2<Double>(1.0, 4.0), SIMD2<Double>(2.0, 5.0), SIMD2<Double>(3.0, 6.0)))
+------------
+true
+```
+
+## Accessing Matrix Elements and Submatrices
+
+## Matrix Arithmetic
+
+*LANumerics* supports common operations on matrices, among them:
+
+* `transpose` and `adjoint`
+* matrix multiplication
+* elementwise operations
+
+### Transpose and Adjoint
+
+### Matrix Multiplication
+
+### Elementwise Operations
+
 
 ## Solving Linear Equations
 
@@ -98,6 +139,6 @@ It is also legal to create matrices with zero columns and/or rows, like `Matrix(
 
 ## More
 
-Complete documentation of the `LANumerics` API will eventually become available, but this is, just like the package itself, still work in progress. 
+Complete documentation of the *LANumerics* API will eventually become available, but this is, just like the package itself, still work in progress. 
 If you feel like experimenting and exploring more of the currently available functionality, examining the [current tests](https://github.com/phlegmaticprogrammer/LANumerics/tree/master/Tests/LANumericsTests) should provide a good starting point.
 
