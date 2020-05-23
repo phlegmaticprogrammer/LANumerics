@@ -15,7 +15,7 @@ After adding it to your app, import `LANumerics` (and also `Numerics` if you use
 
 You can try out if everything works fine by running
 
-```
+```swift
 import LANumerics
 let A : Matrix<Float> = Matrix(columns: [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
 print("A: \(A)")
@@ -71,7 +71,7 @@ The expression `Matrix(repeating: 1, rows: 2, columns: 3)` constructs a matrix c
 ⎝1.0  1.0  1.0⎠
 ```
 Given the two vectors `v1` and `v2`
-```
+```swift
 let v1 : Vector<Float> = [1, 2, 3]
 let v2 : Vector<Float> = [4, 5, 6]
 ```
@@ -93,7 +93,7 @@ It is also legal to create matrices with zero columns and/or rows, like `Matrix(
 ## SIMD Support
 
 Swift supports `simd` vector and matrix operations. *LANumerics* plays nice with `simd` by providing conversion functions to and from `simd` vectors and matrices. For example,
-```
+```swift
 import simd
 import LANumerics
 
@@ -120,7 +120,7 @@ Note that `simd` reverses the role of row and column indices compared to `LANume
 ## Accessing Matrix Elements and Submatrices
 
 Matrix elements and submatrices can be accessed using familiar notation:
-```
+```swift
 import simd
 import LANumerics
 
@@ -128,6 +128,8 @@ var m = Matrix(rows: [[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 print(m)
 m[2, 1] = 0
 print(m)
+print(m[0 ... 1, 0 ... 1])
+print(m[1 ... 2, 1 ... 2])
 m[0 ... 1, 0 ... 1] = m[1 ... 2, 1 ... 2]
 print(m)
 ```
@@ -141,6 +143,12 @@ yields the output
 ⎛1.0  2.0  3.0⎞
 ⎜4.0  5.0  6.0⎟
 ⎝7.0  0.0  9.0⎠
+2x2-matrix:
+⎛1.0  2.0⎞
+⎝4.0  5.0⎠
+2x2-matrix:
+⎛5.0  6.0⎞
+⎝0.0  9.0⎠
 3x3-matrix:
 ⎛5.0  6.0  3.0⎞
 ⎜0.0  9.0  6.0⎟
@@ -155,16 +163,44 @@ yields the output
 * matrix multiplication
 * elementwise operations
 
-In the following, assume 
-`let u = Matrix<Float>(rows: [[1, 2, 3], [4, 5, 6], [7, 8, 9]])`
-and 
-`let v = `
-such that 
-`print("u: \(u)")`
+In the following, assume the context
+```swift
+import Numerics
+import LANumerics
+let u = Matrix<Complex<Float>>(rows: [[1, 2 * .i], [3, 4 * .i + 1]])
+let v = Matrix<Complex<Float>>(rows: [[.i, 0], [0, 1 + 1 * .i]])
+print("u : \(u)\n")
+print("v : \(v)\n")
+```
+which has output 
+```
+u : 2x2-matrix:
+⎛1.0  2.0i      ⎞
+⎝3.0  1.0 + 4.0i⎠
+
+v : 2x2-matrix:
+⎛1.0i  0.0       ⎞
+⎝0.0   1.0 + 1.0i⎠
+```
 
 ### Transpose and Adjoint
+For **real** matrices, `transpose` and `adjoint` have the same meaning, but for **complex** matrices the `adjoint` is the element-wise conjugate of the `transpose`. Executing
+```swift
+print("u.transpose : \(u.transpose)\n")
+print("u.adjoint : \(u.adjoint)\n")
+```
+thus yields
+```
+u.transpose : 2x2-matrix:
+⎛1.0   3.0       ⎞
+⎝2.0i  1.0 + 4.0i⎠
 
-
+u.adjoint : 2x2-matrix:
+⎛1.0    3.0       ⎞
+⎝-2.0i  1.0 - 4.0i⎠
+```
+The `adjoint` has the advantage over the `transpose` that many properties involving the adjoint generalise naturally from real matrices to complex matrices. Therefore there is the shortcut notation
+`u′` for `u.adjoint`. Note that `′` is the unicode character "Prime" `U+2032` (you can use for example [Ukelele](https://software.sil.org/ukelele/) to make the input of that character easier).
 
 ### Matrix Multiplication
 
