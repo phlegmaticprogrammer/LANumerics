@@ -244,10 +244,33 @@ v.vector: [Complex<Float>(0.0, 1.0), Complex<Float>(0.0, 0.0), Complex<Float>(0.
 
 The dot product of `u.vector` and `v.vector`  results in 
 ```
-
+u.vector * v.vector: -3.0 + 6.0i
 ```
-
-
+Another vector product is 
+```
+u.vector ′* v.vector: 5.0 - 2.0i
+```
+which corresponds to 
+```
+u.vector′ * v.vector: 1x1-matrix:
+(5.0 - 2.0i)
+```
+Furthermore, there is 
+```
+u.vector *′ v.vector: 4x4-matrix:
+⎛-1.0i       0.0  0.0  1.0 - 1.0i⎞
+⎜-3.0i       0.0  0.0  3.0 - 3.0i⎟
+⎜2.0         0.0  0.0  2.0 + 2.0i⎟
+⎝4.0 - 1.0i  0.0  0.0  5.0 + 3.0i⎠
+```
+which is equivalent to 
+```
+Matrix(u.vector) * v.vector′: 4x4-matrix:
+⎛-1.0i       0.0  0.0  1.0 - 1.0i⎞
+⎜-3.0i       0.0  0.0  3.0 - 3.0i⎟
+⎜2.0         0.0  0.0  2.0 + 2.0i⎟
+⎝4.0 - 1.0i  0.0  0.0  5.0 + 3.0i⎠
+```
 
 ## Solving Linear Equations
 
