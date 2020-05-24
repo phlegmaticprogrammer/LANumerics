@@ -147,5 +147,5 @@ extension Vector : ToStringWithPrecision where Element : ToStringWithPrecision {
         s.append("]")
         return s
     }
-
+    
 }

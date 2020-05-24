@@ -58,9 +58,9 @@ final class LANumericsTests: XCTestCase {
         func generic<E : Num>(_ type : E.Type) {
             let u : Matrix<E> = countingMatrix(rows : 4, columns : 3)
             XCTAssertEqual(u.manhattanNorm, E.Magnitude(exactly: add(u.rows * u.columns))!)
-            XCTAssertEqual(u.manhattanNorm, u.fold(0) { x, y in x + y.manhattanLength })
+            XCTAssertEqual(u.manhattanNorm, u.reduce(0) { x, y in x + y.manhattanLength })
             let w : Matrix<E> = randomWholeMatrix()
-            XCTAssertEqual(w.manhattanNorm, w.fold(0) { x, y in x + y.manhattanLength })
+            XCTAssertEqual(w.manhattanNorm, w.reduce(0) { x, y in x + y.manhattanLength })
         }
         stress {
             generic(Float.self)
@@ -74,7 +74,7 @@ final class LANumericsTests: XCTestCase {
         func generic<E : Num>(_ type : E.Type) {
             let u : Matrix<E> = randomWholeMatrix()
             let l2 = u.norm
-            let sum = u.fold(0) { x, y in x + y.lengthSquared }
+            let sum = u.reduce(0) { x, y in x + y.lengthSquared }
             XCTSame(l2 * l2, sum)
         }
         stress {
@@ -544,7 +544,7 @@ final class LANumericsTests: XCTestCase {
     func test_blas_asum() {
         func generic<E : Num>(_ type : E.Type) {
             let v : Vector<E> = randomWholeVector()
-            let asum = Matrix(v).fold(0) { x, y in x + y.manhattanLength }
+            let asum = Matrix(v).reduce(0) { x, y in x + y.manhattanLength }
             let blas_asum = E.blas_asum(Int32(v.count), v, 1)
             XCTAssertEqual(asum, blas_asum)
         }
@@ -559,7 +559,7 @@ final class LANumericsTests: XCTestCase {
     func test_blas_nrm2() {
         func generic<E : Num>(_ type : E.Type) {
             let v : Vector<E> = randomWholeVector()
-            let nrm2_squared = Matrix(v).fold(0) { x, y in x + y.lengthSquared }
+            let nrm2_squared = Matrix(v).reduce(0) { x, y in x + y.lengthSquared }
             let blas_nrm2 = E.blas_nrm2(Int32(v.count), v, 1)
             XCTSame(E(magnitude: nrm2_squared), E(magnitude: blas_nrm2 * blas_nrm2))
         }

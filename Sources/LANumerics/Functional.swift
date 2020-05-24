@@ -22,7 +22,7 @@ public extension Matrix {
         return Matrix<F>(rows: _rows, columns: _columns, elements: elems)
     }
     
-    func fold<F>(_ start : F, _ using : (F, Element) throws -> F) rethrows -> F {
+    func reduce<F>(_ start : F, _ using : (F, Element) throws -> F) rethrows -> F {
         var result = start
         for elem in elements {
             result = try using(result, elem)
@@ -30,8 +30,8 @@ public extension Matrix {
         return result
     }
     
-    func fold(_ using : (Element, Element) throws -> Element) rethrows -> Element {
-        return try fold(Element.zero, using)
+    func reduce(_ using : (Element, Element) throws -> Element) rethrows -> Element {
+        return try reduce(Element.zero, using)
     }
     
     func forall(_ cond : (Element) throws -> Bool) rethrows -> Bool {

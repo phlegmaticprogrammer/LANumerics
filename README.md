@@ -331,10 +331,10 @@ u .* v : 2x2-matrix:
 
 ### Functional Operations
 
-The `Matrix` type supports functional operations like `map`, `fold` and `combine`. These come in handy when performance is not that important, and there is no accelerated equivalent available (yet?).
+The `Matrix` type supports functional operations like `map`, `reduce` and `combine`. These come in handy when performance is not that important, and there is no accelerated equivalent available (yet?).
 For example, the expression
 ```swift
-u.fold(0) { x, y in max(x, y.magnitude) }
+u.reduce(0) { x, y in max(x, y.magnitude) }
 ```
 results in the value `4`.
 
