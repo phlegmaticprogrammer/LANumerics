@@ -284,9 +284,10 @@ Similarly, it is better to use `u *′ v` than `u * v′`, and `u ′*′ v` ins
 
 We will view `u` and `v` as vectors `u.vector` and `v.vector` now, where `.vector` corresponds to a [*column-major*](https://en.wikipedia.org/wiki/Row-_and_column-major_order) order of the matrix elements:
 ```
-u.vector: [Complex<Float>(1.0, 0.0), Complex<Float>(3.0, 0.0), Complex<Float>(0.0, 2.0), Complex<Float>(1.0, 4.0)]
-v.vector: [Complex<Float>(0.0, 1.0), Complex<Float>(0.0, 0.0), Complex<Float>(0.0, 0.0), Complex<Float>(1.0, 1.0)]
+u.vector: [1.0, 3.0, 2.0i, 1.0 + 4.0i]
+v.vector: [1.0i, 0.0, 0.0, 1.0 + 1.0i]
 ```
+(Actually, in the above, we used `u.vector.toString()` and `v.vector.toString()` for better formatting of complex numbers. We will also do so below where appropriate without further mentioning it.)
 
 The dot product of `u.vector` and `v.vector`  results in 
 ```
@@ -298,7 +299,7 @@ u.vector ′* v.vector: 5.0 - 2.0i
 ```
 which corresponds to 
 ```
-u.vector′ * v.vector: [Complex<Float>(5.0, -2.0)]
+u.vector′ * v.vector: [5.0 - 2.0i]
 ```
 Furthermore, there is 
 ```
