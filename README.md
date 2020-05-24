@@ -17,10 +17,11 @@ Under the hood it relies on the [`Accelerate`](https://developer.apple.com/docum
 * [SIMD Support](#simd-support)
 * [Matrix Arithmetic](#matrix-arithmetic)
 * [Solving Linear Equations](#solving-linear-equations)
+* [Linear Least Squares](#linear-least-squares)
 * [Matrix Decompositions](#matrix-decompositions)
 
 Complete documentation of the *LANumerics* API will eventually become available, but this is, just like the package itself, still work in progress. 
-If you feel like experimenting and exploring more of the currently available functionality, examining the [current tests](https://github.com/phlegmaticprogrammer/LANumerics/tree/master/Tests/LANumericsTests) should provide a good starting point.
+If you feel like experimenting and exploring more of the currently available functionality, examining the [current tests](https://github.com/phlegmaticprogrammer/LANumerics/tree/master/Tests/LANumericsTests) could provide a good starting point beyond this README.
 
 ---
 
@@ -251,8 +252,8 @@ u′
 ```
 for `u.adjoint`. 
 
-Note that `′` is the unicode character "Prime" `U+2032`. You can use for example [Ukelele](https://software.sil.org/ukelele/) to make the input of that character smooth. Other alternatives are configuring the touchbar of your macbook, or
-using a configurable keyboard like [Stream Deck](https://www.elgato.com/en/gaming/stream-deck).
+Note that `′` is the unicode character "Prime" `U+2032`. You can use for example [Ukelele](https://software.sil.org/ukelele/) to make the input of that character smooth. Other alternatives are configuring the touchbar of your macbook, or using a configurable keyboard like [Stream Deck](https://www.elgato.com/en/gaming/stream-deck).
+
 
 ### Matrix Multiplication
 
@@ -339,4 +340,111 @@ results in the value `4`.
 
 ## Solving Linear Equations
 
+You can solve a system of linear equations like 
+
+1.  7x+5y-3z = 16
+2.  3x-5y+2z = -8
+3.  5x+3y-7z = 0
+
+by converting it into matrix form `A * u = b` and solving it for `u`:
+```swift
+import LANumerics
+let A = Matrix<Double>(rows: [[7, 5, -3], [3, -5, 2], [5, 3, -7]])
+let b : Vector<Double> = [16, -8, 0]
+let u = A.solve(b)!
+print("A: \(A)\n")
+print("b: \(b)\n")
+print("u: \(u.toString(precision: 1))")
+```
+This results in the output:
+```
+A: 3x3-matrix:
+⎛7.0  5.0   -3.0⎞
+⎜3.0  -5.0  2.0 ⎟
+⎝5.0  3.0   -7.0⎠
+
+b: [16.0, -8.0, 0.0]
+
+u: [1.0, 3.0, 2.0]
+```
+Therefore the solution is x=1, y=3, z=2.
+
+This example is actually plugged from an [article](https://www.appcoda.com/accelerate-framework/) which describes how to use the `Accelerate` framework directly and without a nice library like `LANumerics` 😁.
+
+You can solve for multiple right-hand sides simultaneously. For example, you can compute the inverse of `A` like so:
+```swift
+let Id : Matrix<Double> = .eye(3)
+print("Id: \(Id)\n")
+let U = A.solve(Id)!
+print("U: \(U)\n")
+print("A * U: \(A * U)")
+```
+This results in the output
+```
+Id: 3x3-matrix:
+⎛1.0  0.0  0.0⎞
+⎜0.0  1.0  0.0⎟
+⎝0.0  0.0  1.0⎠
+
+U: 3x3-matrix:
+⎛0.11328125  0.1015625             -0.019531249999999997⎞
+⎜0.12109375  -0.13281250000000003  -0.08984375          ⎟
+⎝0.1328125   0.01562499999999999   -0.1953125           ⎠
+
+A * U: 3x3-matrix:
+⎛1.0  -1.0755285551056204e-16  0.0⎞
+⎜0.0  1.0                      0.0⎟
+⎝0.0  -4.163336342344337e-17   1.0⎠
+```
+## Linear Least Squares
+
+Extending the above example, you can also solve it using *least squares approximation* instead:
+```swift
+print(A.solveLeastSquares(b)!.toString(precision: 1))
+```
+results in the same solution `[1.0, 3.0, 2.0]`. 
+
+Least squares is more general than solving linear equations directly, as it can also deal with situations where you have more equations than variables, or less equations than variables. In other words, it can also handle:
+* non-square matrices `A` 
+* situations with large noise in the data 
+* situations which are only approximately linear
+
+There is a shorthand notation available for the expression `A.solveLeastSquares(b)!`:
+```swift
+A ∖ b
+```
+This also works for simultaneously solving for multiple right-hand sides as before, the inverse of `A` can therefore also be computed using the expression `A ∖ .eye(3)`:
+```
+A ∖ .eye(3): 3x3-matrix:
+⎛0.11328124999999997  0.10156250000000001   -0.01953124999999994⎞
+⎜0.12109375           -0.13281250000000006  -0.08984374999999999⎟
+⎝0.13281249999999997  0.015624999999999993  -0.19531249999999994⎠
+```
+Note that `∖` is the unicode character "Set Minus"  `U+2216`. The same advice for smooth input of this character applies as for the input of `′` earlier.
+
+In addition, there is the operator `′∖` which combines taking the adjoint and solving via least squares. Therefore, to compute the inverse of `A′`, you could better write `A ′∖ .eye(3)` instead of `A′ ∖ .eye(3)`:
+```
+A ′∖ .eye(3): 3x3-matrix:
+⎛0.11328124999999996   0.12109375            0.13281249999999994 ⎞
+⎜0.10156250000000001   -0.13281250000000003  0.01562499999999999 ⎟
+⎝-0.01953124999999994  -0.08984374999999999  -0.19531249999999994⎠
+```
+
 ## Matrix Decompositions
+
+The following matrix decompositions are currently supported:
+
+* singular value decomposition of a real or complex matrix `A`: 
+  ```swift
+  A.svd()
+  ```
+* eigen decomposition for self-adjoint matrices `A` (that is for real or complex matrices for which `A == A′`):
+  ```swift
+  A.eigen()
+  ```
+* schur decomposition of a real or complex square-matrix `A`: 
+  ```swift
+  A.schur()
+  ```
+
+
