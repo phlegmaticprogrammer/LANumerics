@@ -55,7 +55,7 @@ The `LANumeric` protocol denotes the type of numbers on which *LANumerics* opera
 *  `Complex<Float>`
 *  `Complex<Double>`
 
-Most functionality of *LANumerics* is generic in `LANumeric`, e.g. solving a system of linear equations or computing the singular value decomposition of a matrix.
+Most functionality of *LANumerics* is generic in `LANumeric`, e.g. constructing matrices and computing with them, solving a system of linear equations, or computing the singular value decomposition of a matrix.
 
 ## Constructing Matrices
 
@@ -107,63 +107,92 @@ It is also legal to create matrices with zero columns and/or rows, like `Matrix(
 
 ## SIMD Support
 
-Swift supports `simd` vector and matrix operations. *LANumerics* plays nice with `simd` by providing conversion functions to and from `simd` vectors and matrices. For example,
+Swift supports `simd` vector and matrix operations. *LANumerics* plays nice with `simd` by providing conversion functions to and from `simd` vectors and matrices. For example, starting from
 ```swift
 import simd
 import LANumerics
 
 let m = Matrix(rows: [[1, 2, 3], [4, 5, 6]])
 print("m: \(m)")
-let s = m.simd3x2
-print("------------")
-print("as simd: \(s)")
-print("------------")
-print(Matrix(s) == m)
 ```
-results in the output 
+with output 
 ```
 m: 2x3-matrix:
 ⎛1.0  2.0  3.0⎞
 ⎝4.0  5.0  6.0⎠
-------------
-as simd: simd_double3x2(columns: (SIMD2<Double>(1.0, 4.0), SIMD2<Double>(2.0, 5.0), SIMD2<Double>(3.0, 6.0)))
-------------
-true
+```
+we can convert `m` into a `simd` matrix `s` via
+```swift
+let s = m.simd3x2
+print(s)
+```
+resulting in the output 
+```
+simd_double3x2(columns: (SIMD2<Double>(1.0, 4.0), SIMD2<Double>(2.0, 5.0), SIMD2<Double>(3.0, 6.0)))
 ```
 Note that `simd` reverses the role of row and column indices compared to `LANumerics` (and usual mathematical convention).
 
+We can also convert `s` back:
+```swift
+print(Matrix(s) == m)
+```
+will yield the output `true`.
+
 ## Accessing Matrix Elements and Submatrices
 
-Matrix elements and submatrices can be accessed using familiar notation:
+Matrix elements and submatrices can be accessed using familiar notation. Given
 ```swift
 import simd
 import LANumerics
 
 var m = Matrix(rows: [[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 print(m)
-m[2, 1] = 0
-print(m)
-print(m[0 ... 1, 0 ... 1])
-print(m[1 ... 2, 1 ... 2])
-m[0 ... 1, 0 ... 1] = m[1 ... 2, 1 ... 2]
-print(m)
 ```
-yields the output
+with output
 ```
 3x3-matrix:
 ⎛1.0  2.0  3.0⎞
 ⎜4.0  5.0  6.0⎟
 ⎝7.0  8.0  9.0⎠
+```
+we can access the element at row 2 and column 1 via
+```
+m[2, 1]
+```
+which yields `8.0`. We can also set the element at row 2 and column 1 to some value:
+```
+m[2, 1] = 0
+print(m)
+```
+The output of running this is
+```
 3x3-matrix:
 ⎛1.0  2.0  3.0⎞
 ⎜4.0  5.0  6.0⎟
 ⎝7.0  0.0  9.0⎠
+```
+We can also access submatrices of `m`, for example its top-left and bottom-right 2x2 submatrices:
+```
+print(m[0 ... 1, 0 ... 1])
+print(m[1 ... 2, 1 ... 2])
+
+```
+This will print
+```
 2x2-matrix:
 ⎛1.0  2.0⎞
 ⎝4.0  5.0⎠
 2x2-matrix:
 ⎛5.0  6.0⎞
 ⎝0.0  9.0⎠
+```
+Finally, using the same notation, we can overwrite submatrices of `m`:
+```
+m[0 ... 1, 0 ... 1] = m[1 ... 2, 1 ... 2]
+print(m)
+```
+This overwrites the top-left 2x2 submatrix of `m` with its bottom-right 2x2 submatrix, yielding:
+```
 3x3-matrix:
 ⎛5.0  6.0  3.0⎞
 ⎜0.0  9.0  6.0⎟
@@ -234,7 +263,7 @@ u * v: 2x2-matrix:
 ⎝3.0i  -3.0 + 5.0i⎠
 ```
 
-Instead of `u′ * v` one can also use the equivalent, but usually faster expression `u ′* v`:
+Instead of `u′ * v` one can also use the equivalent, but faster expression `u ′* v`:
 ```
 print("u′ * v: \(u′ * v)\n")
 print("u ′* v: \(u ′* v)\n")
@@ -290,7 +319,7 @@ Matrix(u.vector) * v.vector′: 4x4-matrix:
 
 ### Element-wise Operations
 
-Element-wise binary operations like `.+`, `.-`, `.*` and `./` are supported on both vectors and matrices, for example:
+Element-wise operations like `.+`, `.-`, `.*` and `./` are supported on both vectors and matrices, for example:
 
 ```
 u .* v : 2x2-matrix:
