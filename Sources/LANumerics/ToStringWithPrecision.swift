@@ -130,3 +130,22 @@ extension Matrix : ToStringWithPrecision, CustomStringConvertible where Element 
     }
 
 }
+
+extension Vector : ToStringWithPrecision where Element : ToStringWithPrecision {
+    
+    public func toString(precision : Int? = nil) -> String {
+        var s : String = "["
+        var first = true
+        for elem in self {
+            if first {
+                first = false
+            } else {
+                s.append(", ")
+            }
+            s.append(elem.toString(precision: precision))
+        }
+        s.append("]")
+        return s
+    }
+
+}
