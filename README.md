@@ -1,4 +1,4 @@
-# LANumerics ![](https://github.com/phlegmaticprogrammer/LANumerics/workflows/Build+%26+Test/badge.svg)
+# LANumerics ![](https://github.com/phlegmaticprogrammer/LANumerics/workflows/build+%26+test/badge.svg)
 
 Copyright (c) 2020 Steven Obua
 
