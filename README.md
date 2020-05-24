@@ -434,15 +434,15 @@ A ′∖ .eye(3): 3x3-matrix:
 
 The following matrix decompositions are currently supported:
 
-* singular value decomposition of a real or complex matrix `A`: 
+* Singular value decomposition of a real or complex matrix `A`: 
   ```swift
   A.svd()
   ```
-* eigen decomposition for self-adjoint matrices `A` (that is for real or complex matrices for which `A == A′`):
+* Eigen decomposition for self-adjoint matrices `A` (that is for real or complex matrices for which `A == A′`):
   ```swift
   A.eigen()
   ```
-* schur decomposition of a real or complex square-matrix `A`: 
+* Schur decomposition of a real or complex square-matrix `A`: 
   ```swift
   A.schur()
   ```
