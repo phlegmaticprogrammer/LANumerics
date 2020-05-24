@@ -1,4 +1,4 @@
-# LANumerics
+# LANumerics ![](https://github.com/phlegmaticprogrammer/LANumerics/workflows/macOS/badge.svg)
 
 Copyright (c) 2020 Steven Obua
 
