@@ -115,6 +115,22 @@ final class LANumericsTests: XCTestCase {
             let u : Matrix<E> = randomWholeMatrix()
             let norm = u.maxNorm
             XCTAssert(u.forall { x in norm >= x.manhattanLength }, "norm = \(norm) of \(u)")
+            XCTAssert((u.vector.isEmpty && norm == 0) || u.exists { x in norm == x.manhattanLength }, "norm = \(norm) of \(u)")
+        }
+        stress {
+            generic(Float.self)
+            generic(Double.self)
+            generic(Complex<Float>.self)
+            generic(Complex<Double>.self)
+        }
+    }
+
+    func testInfNorm() {
+        func generic<E : Num>(_ type : E.Type) {
+            let u : Matrix<E> = randomWholeMatrix()
+            let norm = u.infNorm
+            XCTAssert(u.forall { x in norm >= x.magnitude }, "norm = \(norm) of \(u)")
+            XCTAssert((u.vector.isEmpty && norm == 0) || u.exists { x in norm == x.magnitude }, "norm = \(norm) of \(u)")
         }
         stress {
             generic(Float.self)

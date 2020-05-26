@@ -74,7 +74,10 @@ public protocol LANumeric : MatrixElement, AlgebraicField, ExpressibleByFloatLit
     
     static func blas_iamax(_ N : Int32,
                            _ X : UnsafePointer<Self>, _ incX : Int32) -> Int32
-    
+
+    static func blas_iamax_inf(_ N : Int32,
+                               _ X : UnsafePointer<Self>, _ incX : Int32) -> Int32
+
     static func blas_dot(_ N : Int32,
                          _ X : UnsafePointer<Self>, _ incX : Int32,
                          _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self
@@ -180,7 +183,13 @@ public extension LANumeric {
         guard !vector.isEmpty else { return -1 }
         return Int(blas_iamax(Int32(vector.count), vector, 1))
     }
-    
+
+    /// Returns the index of the element with the largest magnitude (-1 if the vector is empty).
+    static func indexOfLargestMagnitudeElem(_ vector: Vector<Self>) -> Int {
+        guard !vector.isEmpty else { return -1 }
+        return Int(blas_iamax_inf(Int32(vector.count), vector, 1))
+    }
+
     /// Returns the dot product of `A` and `B`.
     static func dotProduct(_ A: Vector<Self>, _ B: Vector<Self>) -> Self {
         precondition(A.count == B.count)
@@ -394,7 +403,7 @@ public extension LANumeric {
         }
     }
     
-    /// Computes schur decomposition of `A`. The schur form is
+    /// Computes schur decomposition of `A`.
     static func schurDecomposition<R>(_ A : inout Matrix<Self>) -> (eigenValues : Vector<Complex<R>>, schurVectors : Matrix<Self>)? where R == Self.Magnitude {
         var n = Int32(A.rows)
         precondition(n == A.columns)
@@ -436,7 +445,7 @@ infix operator ′* : MultiplicationPrecedence
 infix operator *′ : MultiplicationPrecedence
 infix operator ′*′ : MultiplicationPrecedence
 infix operator ∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
-infix operator ′∖ : MultiplicationPrecedence // unicode character "set minus": U+2216
+infix operator ′∖ : MultiplicationPrecedence
 
 infix operator .* : MultiplicationPrecedence
 infix operator ./ : MultiplicationPrecedence
@@ -470,8 +479,21 @@ public extension Matrix where Element : LANumeric {
         }
     }
     
+    var largestMagnitude : Element {
+        let index = Element.indexOfLargestMagnitudeElem(elements)
+        if index >= 0 {
+            return elements[index]
+        } else {
+            return 0
+        }
+    }
+    
     var maxNorm : Element.Magnitude {
         return largest.manhattanLength
+    }
+    
+    var infNorm : Element.Magnitude {
+        return largestMagnitude.magnitude
     }
         
     static func + (left : Matrix, right : Matrix) -> Matrix {

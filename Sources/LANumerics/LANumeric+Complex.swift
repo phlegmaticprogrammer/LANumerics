@@ -128,6 +128,43 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
         )
     }
 
+    public static func blas_iamax_inf(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32) -> Int32 {
+        dispatch(
+            float: {
+                let R : UnsafePointer<Float> = recast(X)
+                let I = R + 1
+                let inc = 2 * incX
+                let i1 = cblas_isamax(N, R, inc)
+                let i2 = cblas_isamax(N, I, inc)
+                let abs1 = abs(R[Int(2 * i1)])
+                let abs2 = abs(I[Int(2 * i2)])
+                if abs1 == abs2 {
+                    return min(i1, i2)
+                } else if abs1 < abs2 {
+                    return i2
+                } else {
+                    return i1
+                }
+            },
+            double: {
+                let R : UnsafePointer<Double> = recast(X)
+                let I = R + 1
+                let inc = 2 * incX
+                let i1 = cblas_idamax(N, R, inc)
+                let i2 = cblas_idamax(N, I, inc)
+                let abs1 = abs(R[Int(2 * i1)])
+                let abs2 = abs(I[Int(2 * i2)])
+                if abs1 == abs2 {
+                    return min(i1, i2)
+                } else if abs1 < abs2 {
+                    return i2
+                } else {
+                    return i1
+                }
+            }
+        )
+    }
+    
     public static func blas_dot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self {
         return dispatch(
             float: {

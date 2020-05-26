@@ -42,7 +42,11 @@ extension Float : LANumeric {
     public static func blas_iamax(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32) -> Int32 {
         cblas_isamax(N, X, incX)
     }
-    
+
+    public static func blas_iamax_inf(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32) -> Int32 {
+        cblas_isamax(N, X, incX)
+    }
+
     public static func blas_dot(_ N : Int32, _ X : UnsafePointer<Self>, _ incX : Int32, _ Y : UnsafePointer<Self>, _ incY : Int32) -> Self {
         cblas_sdot(N, X, incX, Y, incY)
     }
