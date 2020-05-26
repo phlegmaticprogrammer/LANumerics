@@ -110,10 +110,10 @@ final class LANumericsTests: XCTestCase {
         }
     }
     
-    func testMaxNorm() {
+    func testInfNormManhattan() {
         func generic<E : Num>(_ type : E.Type) {
             let u : Matrix<E> = randomWholeMatrix()
-            let norm = u.maxNorm
+            let norm = u.infNormManhattan
             XCTAssert(u.forall { x in norm >= x.manhattanLength }, "norm = \(norm) of \(u)")
             XCTAssert((u.vector.isEmpty && norm == 0) || u.exists { x in norm == x.manhattanLength }, "norm = \(norm) of \(u)")
         }
@@ -181,7 +181,7 @@ final class LANumericsTests: XCTestCase {
     }
     
     func XCTSame<E : Num>(_ X : Matrix<E>, _ Y : Matrix<E>) {
-        let norm = (X - Y).maxNorm
+        let norm = (X - Y).infNorm
         XCTAssert(norm < epsilon(E.self), "norm is \(norm), X = \(X), Y = \(Y)")
     }
 
@@ -471,7 +471,7 @@ final class LANumericsTests: XCTestCase {
             let B = Matrix<E>([16, -8, 0])
             let X = Matrix<E>([1, 3, 2])
             let eps = epsilon(E.self)
-            XCTAssert((A.solve(B)! - X).maxNorm < eps)
+            XCTAssert((A.solve(B)! - X).infNorm < eps)
             let Z = Matrix<E>(rows: 3, columns: 3)
             XCTAssertEqual(Z.solve(B), nil)
             XCTAssertEqual(Z.solve([0, 0, 0]), nil)
@@ -489,8 +489,8 @@ final class LANumericsTests: XCTestCase {
             let B = Matrix<E>([16, -8, 0])
             let X = Matrix<E>([1, 3, 2])
             let eps = epsilon(E.self)
-            XCTAssert((A ∖ B - X).maxNorm < eps)
-            XCTAssert((A′ ′∖ B - X).maxNorm < eps)
+            XCTAssert((A ∖ B - X).infNorm < eps)
+            XCTAssert((A′ ′∖ B - X).infNorm < eps)
             let Z = Matrix<E>(rows: 3, columns: 3)
             XCTAssertEqual(Z ∖ B, Matrix<E>.zeros(3, 1))
             XCTAssertEqual(Z ∖ [0, 0, 0], [0, 0, 0])
@@ -508,8 +508,8 @@ final class LANumericsTests: XCTestCase {
             let A = Matrix(rows: [[1, 1], [eps, 0], [0, eps]])
             let b = [2, eps, eps]
             XCTAssertNil((A′*A).solve(A′*b))
-            XCTAssert((A ∖ Matrix(b) - Matrix([1, 1])).maxNorm < 10 * eps)
-            XCTAssert((A′ ′∖ Matrix(b) - Matrix([1, 1])).maxNorm < 10 * eps)
+            XCTAssert((A ∖ Matrix(b) - Matrix([1, 1])).infNorm < 10 * eps)
+            XCTAssert((A′ ′∖ Matrix(b) - Matrix([1, 1])).infNorm < 10 * eps)
         }
         generic(eps: Double(1e-16))
         generic(eps: Float(1e-7))
@@ -518,11 +518,11 @@ final class LANumericsTests: XCTestCase {
     func testSingularValueDecomposition() {
         func generic<E : Num>(_ type : E.Type) {
             func same(_ X : Matrix<E>, _ Y : Matrix<E>) {
-                let norm = (X - Y).maxNorm
+                let norm = (X - Y).infNorm
                 XCTAssert(norm < epsilon(E.self), "norm is \(norm), X = \(X), Y = \(Y)")
             }
             func isSame(_ X : Matrix<E>, _ Y : Matrix<E>) -> Bool {
-                let norm = (X - Y).maxNorm
+                let norm = (X - Y).infNorm
                 return norm < epsilon(E.self)
             }
             let A : Matrix<E> = randomWholeMatrix()

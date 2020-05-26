@@ -179,13 +179,13 @@ public extension LANumeric {
     }
     
     /// Returns the index of the element with the largest manhattan length (-1 if the vector is empty).
-    static func indexOfLargestElem(_ vector: Vector<Self>) -> Int {
+    static func indexOfManhattanLongestElem(_ vector: Vector<Self>) -> Int {
         guard !vector.isEmpty else { return -1 }
         return Int(blas_iamax(Int32(vector.count), vector, 1))
     }
 
     /// Returns the index of the element with the largest magnitude (-1 if the vector is empty).
-    static func indexOfLargestMagnitudeElem(_ vector: Vector<Self>) -> Int {
+    static func indexOfLargestElem(_ vector: Vector<Self>) -> Int {
         guard !vector.isEmpty else { return -1 }
         return Int(blas_iamax_inf(Int32(vector.count), vector, 1))
     }
@@ -470,6 +470,15 @@ public extension Matrix where Element : LANumeric {
     
     var norm : Element.Magnitude { return Element.length(elements) }
     
+    var manhattanLongest : Element {
+        let index = Element.indexOfManhattanLongestElem(elements)
+        if index >= 0 {
+            return elements[index]
+        } else {
+            return 0
+        }
+    }
+    
     var largest : Element {
         let index = Element.indexOfLargestElem(elements)
         if index >= 0 {
@@ -479,21 +488,12 @@ public extension Matrix where Element : LANumeric {
         }
     }
     
-    var largestMagnitude : Element {
-        let index = Element.indexOfLargestMagnitudeElem(elements)
-        if index >= 0 {
-            return elements[index]
-        } else {
-            return 0
-        }
-    }
-    
-    var maxNorm : Element.Magnitude {
-        return largest.manhattanLength
+    var infNormManhattan : Element.Magnitude {
+        return manhattanLongest.manhattanLength
     }
     
     var infNorm : Element.Magnitude {
-        return largestMagnitude.magnitude
+        return largest.magnitude
     }
         
     static func + (left : Matrix, right : Matrix) -> Matrix {
