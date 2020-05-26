@@ -59,53 +59,49 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
     }
 
     public static func random(in range: ClosedRange<RealType>) -> Self {
-        if RealType.self == Float.self {
-            let r = range as! ClosedRange<Float>
-            let x = Float.random(in: r) as! RealType
-            let y = Float.random(in: r) as! RealType
-            return Complex(x, y)
-        } else if RealType.self == Double.self {
-            let r = range as! ClosedRange<Double>
-            let x = Double.random(in: r) as! RealType
-            let y = Double.random(in: r) as! RealType
-            return Complex(x, y)
-        } else {
-            fatalError()
-        }
+        return Complex.dispatch (
+            float: {
+                let r = range as! ClosedRange<Float>
+                let x = Float.random(in: r) as! RealType
+                let y = Float.random(in: r) as! RealType
+                return Complex(x, y)
+            },
+            double: {
+                let r = range as! ClosedRange<Double>
+                let x = Double.random(in: r) as! RealType
+                let y = Double.random(in: r) as! RealType
+                return Complex(x, y)
+            }
+        )
     }
     
     public static func randomWhole(in range : ClosedRange<Int>) -> Self {
-        if RealType.self == Float.self {
-            let x = Float.randomWhole(in: range) as! RealType
-            let y = Float.randomWhole(in: range) as! RealType
-            return Complex(x, y)
-        } else if RealType.self == Double.self {
-            let x = Double.randomWhole(in: range) as! RealType
-            let y = Double.randomWhole(in: range) as! RealType
-            return Complex(x, y)
-        } else {
-            fatalError()
-        }
+        return Complex.dispatch (
+            float: {
+                let x = Float.randomWhole(in: range) as! RealType
+                let y = Float.randomWhole(in: range) as! RealType
+                return Complex(x, y)
+            },
+            double: {
+                let x = Double.randomWhole(in: range) as! RealType
+                let y = Double.randomWhole(in: range) as! RealType
+                return Complex(x, y)
+            }
+        )
     }
 
     public static func blas_asum(_ N: Int32, _ X: UnsafePointer<Self>, _ incX: Int32) -> Self.Magnitude {
-        if RealType.self == Float.self {
-            return cblas_scasum(N, X, incX) as! Self.Magnitude
-        } else if RealType.self == Double.self {
-            return cblas_dzasum(N, X, incX) as! Self.Magnitude
-        } else {
-            fatalError()
-        }
+        return Complex.dispatch (
+            float: { cblas_scasum(N, X, incX) as! Self.Magnitude },
+            double: { cblas_dzasum(N, X, incX) as! Self.Magnitude }
+        )
     }
     
     public static func blas_nrm2(_ N: Int32, _ X: UnsafePointer<Self>, _ incX: Int32) -> Self.Magnitude {
-        if RealType.self == Float.self {
-            return cblas_scnrm2(N, X, incX) as! Self.Magnitude
-        } else if RealType.self == Double.self {
-            return cblas_dznrm2(N, X, incX) as! Self.Magnitude
-        } else {
-            fatalError()
-        }
+        return Complex.dispatch (
+            float: { cblas_scnrm2(N, X, incX) as! Self.Magnitude },
+            double: { cblas_dznrm2(N, X, incX) as! Self.Magnitude }
+        )
     }
     
     public static func blas_scal(_ N : Int32, _ alpha : Self, _ X : UnsafeMutablePointer<Self>, _ incX : Int32) {
