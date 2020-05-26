@@ -336,7 +336,7 @@ For example, the expression
 ```swift
 u.reduce(0) { x, y in max(x, y.magnitude) }
 ```
-results in the value `4`.
+results in the value `4`. In this case it is better though to use the equivalent expression `u.infNorm` instead.
 
 ## Solving Linear Equations
 
