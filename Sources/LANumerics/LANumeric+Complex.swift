@@ -11,11 +11,6 @@ fileprivate func recast<U, V>(_ ptr : UnsafePointer<U>) -> UnsafePointer<V> {
     return p.assumingMemoryBound(to: V.self)
 }
 
-fileprivate func upcast<U, V>(_ ptr : UnsafeMutablePointer<U>) -> UnsafePointer<V> {
-    let p = UnsafeRawPointer(ptr)
-    return p.assumingMemoryBound(to: V.self)
-}
-
 extension Complex {
     
     static func dispatch<R>(float : () -> R, double : () -> R) -> R {
@@ -35,7 +30,6 @@ extension Complex : MatrixElement {
     public var adjoint : Complex { return conjugate }
 
 }
-
 
 extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANumeric {
         
