@@ -245,11 +245,11 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
         )
     }
     
-    public static func lapack_gesv(_ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
-                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
-                                   _ ipiv : UnsafeMutablePointer<Int32>,
-                                   _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
-                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+    public static func lapack_gesv(_ n : UnsafeMutablePointer<IntLA>, _ nrhs : UnsafeMutablePointer<IntLA>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
+                                   _ ipiv : UnsafeMutablePointer<IntLA>,
+                                   _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
+                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         dispatch(
             float: { cgesv_(n, nrhs, recast(a), lda, ipiv, recast(b), ldb, info) },
@@ -258,11 +258,11 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
     }
 
     public static func lapack_gels(_ trans : Transpose,
-                                   _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
-                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
-                                   _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
-                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+                                   _ m : UnsafeMutablePointer<IntLA>, _ n : UnsafeMutablePointer<IntLA>, _ nrhs : UnsafeMutablePointer<IntLA>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
+                                   _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
+                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         var trans = trans.blas(complex: true)
         return dispatch(
@@ -272,13 +272,13 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
     }
 
     public static func lapack_gesvd(_ jobu : UnsafeMutablePointer<Int8>, _ jobvt : UnsafeMutablePointer<Int8>,
-                                    _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>,
-                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                                    _ m : UnsafeMutablePointer<IntLA>, _ n : UnsafeMutablePointer<IntLA>,
+                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                     _ s : UnsafeMutablePointer<Self.Magnitude>,
-                                    _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<Int32>,
-                                    _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<Int32>,
-                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                                    _ info : UnsafeMutablePointer<Int32>) -> Int32
+                                    _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<IntLA>,
+                                    _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<IntLA>,
+                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
+                                    _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         return dispatch(
             float: {
@@ -292,11 +292,11 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
         )
     }
     
-    public static func lapack_heev(_ jobz : UnsafeMutablePointer<Int8>, _ uplo : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
-                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+    public static func lapack_heev(_ jobz : UnsafeMutablePointer<Int8>, _ uplo : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<IntLA>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ w : UnsafeMutablePointer<Self.Magnitude>,
-                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
+                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         var rwork : [Self.Magnitude] = Array(repeating: 0, count: max(1, 3*Int(n.pointee)-2))
         return dispatch(
@@ -305,18 +305,18 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
         )
     }
     
-    public static func lapack_gees(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
-                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+    public static func lapack_gees(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<IntLA>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ wr : UnsafeMutablePointer<Self.Magnitude>,
                                    _ wi : UnsafeMutablePointer<Self.Magnitude>,
-                                   _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<Int32>,
-                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+                                   _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<IntLA>,
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
+                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         let N = Int(n.pointee)
         var rwork : [Self.Magnitude] = Array(repeating: 0, count: N)
         var sort : Int8 = 0x4E /* "N" */
-        var sdim : Int32 = 0
+        var sdim : IntLA = 0
         var w : [Self] = Array(repeating: 0, count: N)
         let result = dispatch(
             float: { cgees_(jobvs, &sort, nil, n, recast(a), lda , &sdim, recast(&w), recast(vs), ldvs, recast(work), lwork, recast(&rwork), nil, info) },

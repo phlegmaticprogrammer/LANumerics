@@ -87,57 +87,57 @@ extension Float : LANumeric {
         cblas_sger(Order, M, N, alpha, X, incX, Y, incY, A, lda)
     }
 
-    public static func lapack_gesv(_ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
-                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
-                                   _ ipiv : UnsafeMutablePointer<Int32>,
-                                   _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
-                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+    public static func lapack_gesv(_ n : UnsafeMutablePointer<IntLA>, _ nrhs : UnsafeMutablePointer<IntLA>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
+                                   _ ipiv : UnsafeMutablePointer<IntLA>,
+                                   _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
+                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         sgesv_(n, nrhs, a, lda, ipiv, b, ldb, info)
     }
     
     public static func lapack_gels(_ trans : Transpose,
-                                   _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>, _ nrhs : UnsafeMutablePointer<Int32>,
-                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
-                                   _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<Int32>,
-                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+                                   _ m : UnsafeMutablePointer<IntLA>, _ n : UnsafeMutablePointer<IntLA>, _ nrhs : UnsafeMutablePointer<IntLA>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
+                                   _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
+                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         var trans : Int8 = trans.blas(complex: false)
         return sgels_(&trans, m, n, nrhs, a, lda, b, ldb, work, lwork, info)
     }
 
     public static func lapack_gesvd(_ jobu : UnsafeMutablePointer<Int8>, _ jobvt : UnsafeMutablePointer<Int8>,
-                                    _ m : UnsafeMutablePointer<Int32>, _ n : UnsafeMutablePointer<Int32>,
-                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+                                    _ m : UnsafeMutablePointer<IntLA>, _ n : UnsafeMutablePointer<IntLA>,
+                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                     _ s : UnsafeMutablePointer<Self.Magnitude>,
-                                    _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<Int32>,
-                                    _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<Int32>,
-                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                                    _ info : UnsafeMutablePointer<Int32>) -> Int32
+                                    _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<IntLA>,
+                                    _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<IntLA>,
+                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
+                                    _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         sgesvd_(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, work, lwork, info)
     }
     
-    public static func lapack_heev(_ jobz : UnsafeMutablePointer<Int8>, _ uplo : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
-                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+    public static func lapack_heev(_ jobz : UnsafeMutablePointer<Int8>, _ uplo : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<IntLA>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ w : UnsafeMutablePointer<Self.Magnitude>,
-                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
+                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         ssyev_(jobz, uplo, n, a, lda, w, work, lwork, info)
     }
     
-    public static func lapack_gees(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<Int32>,
-                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<Int32>,
+    public static func lapack_gees(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<IntLA>,
+                                   _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ wr : UnsafeMutablePointer<Self.Magnitude>,
                                    _ wi : UnsafeMutablePointer<Self.Magnitude>,
-                                   _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<Int32>,
-                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<Int32>,
-                                   _ info : UnsafeMutablePointer<Int32>) -> Int32
+                                   _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<IntLA>,
+                                   _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
+                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
     {
         var sort : Int8 = 0x4E /* "N" */
-        var sdim : Int32 = 0
+        var sdim : IntLA = 0
         return sgees_(jobvs, &sort, nil, n, a, lda , &sdim, wr, wi, vs, ldvs, work, lwork, nil, info)
     }
     
