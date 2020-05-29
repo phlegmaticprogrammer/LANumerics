@@ -110,14 +110,14 @@ public protocol LANumeric : MatrixElement, AlgebraicField, ExpressibleByFloatLit
                             _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                             _ ipiv : UnsafeMutablePointer<IntLA>,
                             _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
-                            _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                            _ info : UnsafeMutablePointer<IntLA>) -> Int32
 
     static func lapack_gels(_ trans : Transpose,
                             _ m : UnsafeMutablePointer<IntLA>, _ n : UnsafeMutablePointer<IntLA>, _ nrhs : UnsafeMutablePointer<IntLA>,
                             _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                             _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
                             _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                            _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                            _ info : UnsafeMutablePointer<IntLA>) -> Int32
     
     static func lapack_gesvd(_ jobu : UnsafeMutablePointer<Int8>, _ jobvt : UnsafeMutablePointer<Int8>,
                              _ m : UnsafeMutablePointer<IntLA>, _ n : UnsafeMutablePointer<IntLA>,
@@ -126,13 +126,13 @@ public protocol LANumeric : MatrixElement, AlgebraicField, ExpressibleByFloatLit
                              _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<IntLA>,
                              _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<IntLA>,
                              _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                             _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                             _ info : UnsafeMutablePointer<IntLA>) -> Int32
 
     static func lapack_heev(_ jobz : UnsafeMutablePointer<Int8>, _ uplo : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<IntLA>,
                             _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                             _ w : UnsafeMutablePointer<Self.Magnitude>,
                             _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                            _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                            _ info : UnsafeMutablePointer<IntLA>) -> Int32
     
     static func lapack_gees(_ jobvs : UnsafeMutablePointer<Int8>, _ n : UnsafeMutablePointer<IntLA>,
                             _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
@@ -140,7 +140,7 @@ public protocol LANumeric : MatrixElement, AlgebraicField, ExpressibleByFloatLit
                             _ wi : UnsafeMutablePointer<Self.Magnitude>,
                             _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<IntLA>,
                             _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                            _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                            _ info : UnsafeMutablePointer<IntLA>) -> Int32
     
     static func vDSP_elementwise_absolute(_ v : [Self]) -> [Self.Magnitude]
     

@@ -249,7 +249,7 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ ipiv : UnsafeMutablePointer<IntLA>,
                                    _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
-                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                   _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         dispatch(
             float: { cgesv_(n, nrhs, recast(a), lda, ipiv, recast(b), ldb, info) },
@@ -262,7 +262,7 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                   _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         var trans = trans.blas(complex: true)
         return dispatch(
@@ -278,7 +278,7 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
                                     _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<IntLA>,
                                     _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<IntLA>,
                                     _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                                    _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                    _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         return dispatch(
             float: {
@@ -296,7 +296,7 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ w : UnsafeMutablePointer<Self.Magnitude>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                   _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         var rwork : [Self.Magnitude] = Array(repeating: 0, count: max(1, 3*Int(n.pointee)-2))
         return dispatch(
@@ -311,7 +311,7 @@ extension Complex : LANumeric, ExpressibleByFloatLiteral where RealType : LANume
                                    _ wi : UnsafeMutablePointer<Self.Magnitude>,
                                    _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<IntLA>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                   _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         let N = Int(n.pointee)
         var rwork : [Self.Magnitude] = Array(repeating: 0, count: N)

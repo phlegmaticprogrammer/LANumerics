@@ -92,7 +92,7 @@ extension Double : LANumeric {
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ ipiv : UnsafeMutablePointer<IntLA>,
                                    _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
-                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                   _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         dgesv_(n, nrhs, a, lda, ipiv, b, ldb, info)
     }
@@ -102,7 +102,7 @@ extension Double : LANumeric {
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ b : UnsafeMutablePointer<Self>, _ ldb : UnsafeMutablePointer<IntLA>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                   _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         var trans : Int8 = trans.blas(complex: false)
         return dgels_(&trans, m, n, nrhs, a, lda, b, ldb, work, lwork, info)
@@ -115,7 +115,7 @@ extension Double : LANumeric {
                                     _ u : UnsafeMutablePointer<Self>, _ ldu : UnsafeMutablePointer<IntLA>,
                                     _ vt : UnsafeMutablePointer<Self>, _ ldvt : UnsafeMutablePointer<IntLA>,
                                     _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                                    _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                    _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         dgesvd_(jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, work, lwork, info)
     }
@@ -124,7 +124,7 @@ extension Double : LANumeric {
                                    _ a : UnsafeMutablePointer<Self>, _ lda : UnsafeMutablePointer<IntLA>,
                                    _ w : UnsafeMutablePointer<Self.Magnitude>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                   _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         dsyev_(jobz, uplo, n, a, lda, w, work, lwork, info)
     }
@@ -135,7 +135,7 @@ extension Double : LANumeric {
                                    _ wi : UnsafeMutablePointer<Self.Magnitude>,
                                    _ vs : UnsafeMutablePointer<Self>, _ ldvs : UnsafeMutablePointer<IntLA>,
                                    _ work : UnsafeMutablePointer<Self>, _ lwork : UnsafeMutablePointer<IntLA>,
-                                   _ info : UnsafeMutablePointer<IntLA>) -> IntLA
+                                   _ info : UnsafeMutablePointer<IntLA>) -> Int32
     {
         var sort : Int8 = 0x4E /* "N" */
         var sdim : IntLA = 0
