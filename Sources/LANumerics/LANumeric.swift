@@ -267,13 +267,13 @@ public extension LANumeric {
     /// Solves the system of linear equations `A * X = B` and stores the result `X` in `B`.
     /// - returns: `true` if the operation completed successfully, `false` otherwise.
     static func solveLinearEquations(_ A : Matrix<Self>, _ B : inout Matrix<Self>) -> Bool {
-        var n = Int32(A.rows)
+        var n = IntLA(A.rows)
         precondition(A.columns == n && B.rows == n)
         var lda = n
         var ldb = n
-        var info : Int32 = 0
-        var nrhs = Int32(B.columns)
-        var ipiv = [Int32](repeating: 0, count: Int(n))
+        var info : IntLA = 0
+        var nrhs = IntLA(B.columns)
+        var ipiv = [IntLA](repeating: 0, count: Int(n))
         var A = A.elements
         asMutablePointer(&A) { A in
             asMutablePointer(&B.elements) { B in
@@ -288,26 +288,26 @@ public extension LANumeric {
     /// Finds the minimum least squares solutions `x` of minimizing `(b - A * x).length` or `(b - A′ * x).length` and returns the result.
     /// Each column `x` in the result corresponds to the solution for the corresponding column `b` in `B`.
     static func solveLinearLeastSquares(_ A : Matrix<Self>, _ transposeA : Transpose, _ B : Matrix<Self>) -> Matrix<Self>? {
-        var m : Int32 = Int32(A.rows)
-        var n : Int32 = Int32(A.columns)
+        var m : IntLA = IntLA(A.rows)
+        var n : IntLA = IntLA(A.columns)
         let X = transposeA != .none ? A.rows : A.columns
         precondition(transposeA != .none ? B.rows == n : B.rows == m)
         var A = A
         A.extend(rows: 1)
         var B = B
         B.extend(rows: Int(max(1, max(n, m))))
-        var nrhs : Int32 = Int32(B.columns)
-        var lda : Int32 = Int32(A.rows)
-        var ldb : Int32 = Int32(B.rows)
-        var lwork : Int32 = -1
-        var info : Int32 = 0
+        var nrhs : IntLA = IntLA(B.columns)
+        var lda : IntLA = IntLA(A.rows)
+        var ldb : IntLA = IntLA(B.rows)
+        var lwork : IntLA = -1
+        var info : IntLA = 0
         asMutablePointer(&A.elements) { A in
             asMutablePointer(&B.elements) { B in
                 var workCount : Self = 0
                 let _ = lapack_gels(transposeA, &m, &n, &nrhs, A, &lda, B, &ldb, &workCount, &lwork, &info)
                 guard info == 0 else { return }
                 var work = [Self](repeating: 0, count: workCount.toInt)
-                lwork = Int32(work.count)
+                lwork = IntLA(work.count)
                 let _ = lapack_gels(transposeA, &m, &n, &nrhs, A, &lda, B, &ldb, &work, &lwork, &info)
             }
         }
@@ -320,16 +320,16 @@ public extension LANumeric {
     /// The result matrix `left` has `m` rows, and depending on its job parameter either `m` (`all`), `min(m, n)` (`singular`) or `0` (`none`) columns.
     /// The result matrix `right` has `n` columns, and depending on its job parameter either `n` (`all`), `min(m, n)` (`singular`) or `0` (`none`) rows.
     static func singularValueDecomposition(_ A : Matrix<Self>, left : SVDJob, right : SVDJob) -> (singularValues : Vector<Self.Magnitude>, left : Matrix<Self>, right : Matrix<Self>)? {
-        var m = Int32(A.rows)
-        var n = Int32(A.columns)
+        var m = IntLA(A.rows)
+        var n = IntLA(A.columns)
         let k = min(m, n)
-        let leftColumns : Int32
+        let leftColumns : IntLA
         switch left {
         case .all: leftColumns = m
         case .singular: leftColumns = k
         case .none: leftColumns = 0
         }
-        let rightRows : Int32
+        let rightRows : IntLA
         switch right {
         case .all: rightRows = n
         case .singular: rightRows = k
@@ -349,8 +349,8 @@ public extension LANumeric {
         var VT = Matrix<Self>(rows: Int(ldvt), columns: Int(n))
         var jobleft = left.lapackJob
         var jobright = right.lapackJob
-        var info : Int32 = 0
-        var lwork : Int32 = -1
+        var info : IntLA = 0
+        var lwork : IntLA = -1
         asMutablePointer(&A.elements) { A in
             asMutablePointer(&S) { S in
                 asMutablePointer(&U.elements) { U in
@@ -359,7 +359,7 @@ public extension LANumeric {
                         let _ = lapack_gesvd(&jobleft, &jobright, &m, &n, A, &lda, S, U, &ldu, VT, &ldvt, &workCount, &lwork, &info)
                         guard info == 0 else { return }
                         var work = [Self](repeating: 0, count: workCount.toInt)
-                        lwork = Int32(work.count)
+                        lwork = IntLA(work.count)
                         let _ = lapack_gesvd(&jobleft, &jobright, &m, &n, A, &lda, S, U, &ldu, VT, &ldvt, &work, &lwork, &info)
                     }
                 }
@@ -379,22 +379,22 @@ public extension LANumeric {
     /// The eigen vectors of `A` are stored in `A` if successful, otherwise the resulting content of `A` is undefined.
     /// - returns: `nil` if the decomposition failed, otherwise the eigenvalues of `A`
     static func eigenDecomposition(_ A : inout Matrix<Self>) -> Vector<Magnitude>? {
-        var n = Int32(A.rows)
+        var n = IntLA(A.rows)
         precondition(n == A.columns)
         guard n > 0 else { return [] }
         var jobz : Int8 = 0x56 /* "V" */
         var uplo : Int8 = 0x55 /* "U" */
         var lda = n
         var w : [Magnitude] = Array(repeating: 0, count: Int(n))
-        var info : Int32 = 0
-        var lwork : Int32 = -1
+        var info : IntLA = 0
+        var lwork : IntLA = -1
         asMutablePointer(&A.elements) { a in
             asMutablePointer(&w) { w in
                 var workCount : Self = 0
                 let _ = lapack_heev(&jobz, &uplo, &n, a, &lda, w, &workCount, &lwork, &info)
                 guard info == 0 else { return }
                 var work = [Self](repeating: 0, count: workCount.toInt)
-                lwork = Int32(work.count)
+                lwork = IntLA(work.count)
                 let _ = lapack_heev(&jobz, &uplo, &n, a, &lda, w, &work, &lwork, &info)
             }
         }
@@ -407,7 +407,7 @@ public extension LANumeric {
     
     /// Computes schur decomposition of `A`.
     static func schurDecomposition<R>(_ A : inout Matrix<Self>) -> (eigenValues : Vector<Complex<R>>, schurVectors : Matrix<Self>)? where R == Self.Magnitude {
-        var n = Int32(A.rows)
+        var n = IntLA(A.rows)
         precondition(n == A.columns)
         guard n > 0 else { return (eigenValues : [], schurVectors : Matrix()) }
         var jobvs : Int8 = 0x56 /* "V" */
@@ -415,8 +415,8 @@ public extension LANumeric {
         var w : [Complex<R>] = Array(repeating: 0, count: Int(n))
         var wr : [Self.Magnitude] = Array(repeating: 0, count: Int(n))
         var wi : [Self.Magnitude] = Array(repeating: 0, count: Int(n))
-        var info : Int32 = 0
-        var lwork : Int32 = -1
+        var info : IntLA = 0
+        var lwork : IntLA = -1
         var vs = Matrix<Self>(rows: Int(n), columns: Int(n))
         var ldvs = n
         asMutablePointer(&A.elements) { a in
@@ -426,7 +426,7 @@ public extension LANumeric {
                     let _ = lapack_gees(&jobvs, &n, a, &lda, &wr, &wi, vs, &ldvs, &workCount, &lwork, &info)
                     guard info == 0 else { return }
                     var work = [Self](repeating: 0, count: workCount.toInt)
-                    lwork = Int32(work.count)
+                    lwork = IntLA(work.count)
                     let _ = lapack_gees(&jobvs, &n, a, &lda, &wr, &wi, vs, &ldvs, &work, &lwork, &info)
                 }
             }
