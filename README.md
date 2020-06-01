@@ -430,6 +430,8 @@ A ′∖ .eye(3): 3x3-matrix:
 ⎝-0.01953124999999994  -0.08984374999999999  -0.19531249999999994⎠
 ```
 
+The inverse of `A` can more concisely also be obtained via `A.inverse!`.
+
 ## Matrix Decompositions
 
 The following matrix decompositions are currently supported:

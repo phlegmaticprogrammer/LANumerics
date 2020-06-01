@@ -440,7 +440,7 @@ public extension LANumeric {
             return nil
         }
     }
-
+    
 }
 
 infix operator ′* : MultiplicationPrecedence
@@ -508,6 +508,10 @@ public extension Matrix where Element : LANumeric {
         var result = left
         result -= right
         return result
+    }
+    
+    static prefix func -(matrix : Matrix) -> Matrix {
+        return -1 * matrix
     }
     
     static func += (left : inout Matrix, right : Matrix) {
@@ -625,7 +629,7 @@ public extension Matrix where Element : LANumeric {
         guard let result = Element.schurDecomposition(&A) else { return nil }
         return (eigenValues: result.eigenValues, schurForm: A, schurVectors: result.schurVectors)
     }
-
+    
     static func ∖ (lhs : Matrix, rhs : Matrix) -> Matrix {
         return lhs.solveLeastSquares(rhs)!
     }
@@ -640,6 +644,11 @@ public extension Matrix where Element : LANumeric {
     
     static func ′∖ (lhs : Matrix, rhs : Vector<Element>) -> Vector<Element> {
         return lhs.solveLeastSquares(transpose: .adjoint, rhs)!
+    }
+    
+    var inverse : Matrix? {
+        guard rows == columns else { return nil }
+        return self.solveLeastSquares(.eye(rows))
     }
 
 }
