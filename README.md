@@ -9,6 +9,8 @@ License: MIT License
 The package depends on [Swift Numerics](https://github.com/apple/swift-numerics), as it supports both **real** and **complex** numerics for both `Float` and `Double` precision in a uniform way. 
 Under the hood it relies on the [`Accelerate`](https://developer.apple.com/documentation/accelerate) framework for most of its functionality, in particular `BLAS` and `LAPACK`, and also `vDSP`.
 
+Examining the [current tests](https://github.com/phlegmaticprogrammer/LANumerics/tree/master/Tests/LANumericsTests) provides a good starting point beyond this README.
+
 ## Table of Contents
 
 * [Usage](#usage)
@@ -20,12 +22,10 @@ Under the hood it relies on the [`Accelerate`](https://developer.apple.com/docum
 * [Linear Least Squares](#linear-least-squares)
 * [Matrix Decompositions](#matrix-decompositions)
 
-Complete documentation of the *LANumerics* API will eventually become available, but this is, just like the package itself, still work in progress. 
-If you feel like experimenting and exploring more of the currently available functionality, examining the [current tests](https://github.com/phlegmaticprogrammer/LANumerics/tree/master/Tests/LANumericsTests) could provide a good starting point beyond this README.
-
 ---
 
 ## Usage
+
 *LANumerics* is a normal Swift package and can be added to your app [in the usual way](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app).
 After adding it to your app, import `LANumerics` (and also `Numerics` if you use complex numbers). 
 
