@@ -12,7 +12,7 @@ let package = Package(
             targets: ["LANumerics"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-numerics", from: "0.0.5")
+        .package(url: "https://github.com/apple/swift-numerics", from: "0.1.0")
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
     ],
